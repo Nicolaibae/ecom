@@ -24,4 +24,6 @@ export const UserStatus ={
 export const TypeOfVerificationCode = {
     REGISTER: 'REGISTER',
     FORGOT_PASSWORD: 'FORGOT_PASSWORD',
+    LOGIN: 'LOGIN',
+    DISDISABLE_2FA: 'DISABLE_2FA',
 } as const

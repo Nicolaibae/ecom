@@ -1,13 +1,15 @@
 import { ConflictException, Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
 import { RolesService } from './role.service';
 import { HashingService } from 'src/shared/services/hashing.service';
-import {  isUniqueConstraintPrismaError } from 'src/shared/helper';
+import {  generateOtp, isUniqueConstraintPrismaError } from 'src/shared/helper';
 import { TokenService } from 'src/shared/services/token.service';
 import { RegisterBodyType, SendOtpBodyType } from './auth.model';
 import { AuthRepository } from './auth.repo';
 import { ShareUserRepository } from 'src/shared/repositories/share-user.repo';
-import fi from 'zod/v4/locales/fi.js';
-import path from 'path';
+import ms from 'ms';
+import { generate } from 'rxjs';
+import { addMilliseconds } from 'date-fns';
+import envConfig from 'src/shared/config';
 
 @Injectable()
 export class AuthService {
@@ -42,6 +44,7 @@ export class AuthService {
     }
     async sendOtp(body: SendOtpBodyType) {
         try {
+            // Kiểm tra xem email đã được đăng ký chưa
             const user = await this.sharedUserRepository.findUnique({ email: body.email });
             if(user) {
                 throw new UnauthorizedException([
@@ -51,6 +54,15 @@ export class AuthService {
                     }
                 ]);
             }
+            // Tạo mã OTP
+            const code = generateOtp()
+            const verificationCode = await this.authRepository.createVerificationCode({
+                email: body.email,
+                code,
+                type: body.type,
+                expiredAt: addMilliseconds(new Date(),ms(envConfig.OTP_EXPIRES_IN)) // 5 phút
+            });
+
         } catch (error) {
             
         }

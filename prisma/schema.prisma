@@ -148,11 +148,11 @@ model VerificationCode {
   code  String               @db.VarChar(50)
   type  VerificationCodeType
 
-  expiresAt DateTime
+  expiredAt DateTime
   createdAt DateTime @default(now())
 
   @@unique([email, type])
-  @@index([expiresAt])
+  @@index([expiredAt])
 }
 
 model Device {

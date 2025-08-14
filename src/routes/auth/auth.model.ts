@@ -36,7 +36,7 @@ export const VerificationCodeSchema = z.object({
     id: z.number(),
     email: z.email(),
     code: z.string().length(6),
-    type: z.enum([TypeOfVerificationCode.REGISTER, TypeOfVerificationCode.FORGOT_PASSWORD]),
+    type: z.enum([TypeOfVerificationCode.REGISTER, TypeOfVerificationCode.FORGOT_PASSWORD, TypeOfVerificationCode.LOGIN,TypeOfVerificationCode.DISDISABLE_2FA]),
     expiredAt: z.date(),
     createdAt: z.date(),
 })

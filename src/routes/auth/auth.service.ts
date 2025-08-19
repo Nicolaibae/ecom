@@ -2,14 +2,15 @@ import { ConflictException, Injectable, UnauthorizedException, UnprocessableEnti
 import { RolesService } from './role.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import {  generateOtp, isUniqueConstraintPrismaError } from 'src/shared/helper';
-import { TokenService } from 'src/shared/services/token.service';
 import { RegisterBodyType, SendOtpBodyType } from './auth.model';
 import { AuthRepository } from './auth.repo';
 import { ShareUserRepository } from 'src/shared/repositories/share-user.repo';
 import ms from 'ms';
-import { generate } from 'rxjs';
 import { addMilliseconds } from 'date-fns';
 import envConfig from 'src/shared/config';
+import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant';
+import path from 'path';
+import { EmailService } from 'src/shared/services/email.service';
 
 @Injectable()
 export class AuthService {
@@ -17,10 +18,34 @@ export class AuthService {
         private readonly rolesService: RolesService,
         private readonly sharedUserRepository: ShareUserRepository,
         private readonly authRepository: AuthRepository,
-        private readonly hashService: HashingService
+        private readonly hashService: HashingService,
+        private readonly emailService: EmailService
     ) { }
     async register(body: RegisterBodyType): Promise<any> {
         try {
+            const verificationCode = await this.authRepository.findVerificationCode({
+                email: body.email,
+                code: body.code,
+                type: TypeOfVerificationCode.REGISTER,
+                
+            })
+            if (!verificationCode) {
+                throw new UnprocessableEntityException([
+                    {
+                        message: 'Mã xác thực không hợp lệ ',
+                        path: 'code',
+                    }
+                ]);
+            }
+            // Kiểm tra mã xác thực có hết hạn không
+            if (verificationCode.expiredAt < new Date()) {
+                throw new UnprocessableEntityException([
+                    {
+                        message: 'Mã xác thực đã hết hạn',
+                        path: 'code',
+                    }
+                ]);
+            }
             const clientRoleId = await this.rolesService.getClientRoleId();
             const hashedPassword = await this.hashService.hash(body.password);
            
@@ -60,11 +85,21 @@ export class AuthService {
                 email: body.email,
                 code,
                 type: body.type,
-                expiredAt: addMilliseconds(new Date(),ms(envConfig.OTP_EXPIRES_IN)) // 5 phút
+                expiredAt: addMilliseconds(new Date(),ms(envConfig.OTP_EXPIRES_IN as ms.StringValue)) // 5 phút
             });
-
+            const {error} = await this.emailService.sendOtp({
+                email: body.email,
+                code
+            })
+            if(error){
+                throw new UnprocessableEntityException({
+                    message:"Guiwr max otp that bai",
+                    path:"code"
+                })
+            }
+            return verificationCode
         } catch (error) {
-            
+            throw error;
         }
     }
   //   async login(body: any) {

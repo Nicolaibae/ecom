@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": [
+      "react"
+    ],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,
@@ -9,7 +13,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop":true,
+    "esModuleInterop": true,
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",

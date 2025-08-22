@@ -3,10 +3,12 @@ import { Resend } from "resend";
 import envConfig from "../config";
 import fs from 'fs'
 import path from "path";
-const otpTemplate = fs.readFileSync(path.resolve('src/shared/email-templates/otp.html'), {
-   encoding: "utf-8"
-})
-console.log(otpTemplate)
+import {OTPEmail} from "emails/otp"
+import * as React from "react";
+// const otpTemplate = fs.readFileSync(path.resolve('src/shared/email-templates/otp.html'), {
+//    encoding: "utf-8"
+// })
+
 @Injectable()
 export class EmailService {
    private resend: Resend
@@ -20,7 +22,8 @@ export class EmailService {
          from: 'Nestjs Ecommerce <No-reply@thaivinh.io.vn>',
          to: [payload.email],
          subject,
-         html: otpTemplate.replaceAll('{{subject}}', subject).replaceAll('{{code}}', payload.code),
+         react: <OTPEmail otpCode={payload.code} title={subject} />,
+         // html: otpTemplate.replaceAll('{{subject}}', subject).replaceAll('{{code}}', payload.code),
       });
    }
 }

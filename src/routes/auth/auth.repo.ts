@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/shared/services/prisma.service";
-import { DeviceType, RegisterBodyType, RoleType, VerificationCodeType } from "./auth.model";
+import { DeviceType, RefreshTokenType, RegisterBodyType, RoleType, VerificationCodeType } from "./auth.model";
 import { UserType } from "src/shared/models/shared-user.model";
 import { TypeOfVerificationCodeType } from "src/shared/constants/auth.constant";
 @Injectable()
@@ -55,18 +55,45 @@ export class AuthRepository {
             data
         })
     }
-    async createDevice(data:Pick<DeviceType,'userId'|'userAgent'|'ip'>&Partial<Pick<DeviceType,|'lastActive'|'isActive'>>){
+    async createDevice(data: Pick<DeviceType, 'userId' | 'userAgent' | 'ip'> & Partial<Pick<DeviceType, | 'lastActive' | 'isActive'>>) {
         return await this.prismaService.device.create({
             data
         })
     }
-     async findUniqueUserInclueRole(uniqueObject: {email:string}| {id:number}): Promise<UserType & {role:RoleType} | null> {
+    async findUniqueUserInclueRole(uniqueObject: { email: string } | { id: number }): Promise<UserType & { role: RoleType } | null> {
         return await this.prismaService.user.findUnique({
             where: uniqueObject,
-            include:{
-                role:true
+            include: {
+                role: true
             }
         });
+    }
+    async findUniqueRefreshokenIncludeUserRole(uniqueToken: { token: string }): Promise<
+        RefreshTokenType & { user: UserType & { role: RoleType } } | null
+    > {
+        return this.prismaService.refreshToken.findUnique({
+            where: uniqueToken,
+            include: {
+                user: {
+                    include: {
+                        role: true
+                    }
+                }
+            }
+        })
+    }
+    UpdateDevice(deviceId: number, data: Partial<DeviceType>):Promise<DeviceType>{
+        return this.prismaService.device.update({
+            where:{
+                id:deviceId
+            },
+            data
+        })
+    }
+    DeleteRefreshToken(payloadToken: {token:string}):Promise<RefreshTokenType>{
+        return this.prismaService.refreshToken.delete({
+            where:payloadToken
+        })
     }
 
 }

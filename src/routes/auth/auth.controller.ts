@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Ip, Post, Query, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import {  LoginBodyDto, LoginResDto, LogoutBodyDTO, RefreshTokenBodyDTO, RefreshTokenResDTO, RegisterBodyDto, RegisterResDto, SendOtpBody } from './auth.dto';
+import {  ForgotPasswordBodyDTO, LoginBodyDto, LoginResDto, LogoutBodyDTO, RefreshTokenBodyDTO, RefreshTokenResDTO, RegisterBodyDto, RegisterResDto, SendOtpBody } from './auth.dto';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator';
 import { MessageResDTO } from 'src/shared/dtos/reponse.dto';
@@ -8,6 +8,7 @@ import { IsPublic } from 'src/shared/decorators/auth.decorator';
 import { GoogleService } from './google.service';
 import envConfig from 'src/shared/config';
 import express from 'express';
+import { th } from 'zod/v4/locales';
 
 @Controller('auth')
 export class AuthController {
@@ -26,7 +27,7 @@ export class AuthController {
   @IsPublic()
   @ZodSerializerDto(MessageResDTO)
   async sendOtp(@Body() body: SendOtpBody) {
-    return await this.authService.sendOtp(body);
+    return await this.authService.sendOTP(body);
   }
   @Post('login')
   @IsPublic()
@@ -82,5 +83,11 @@ export class AuthController {
           : 'Đã xảy ra lỗi khi đăng nhập bằng Google, vui lòng thử lại bằng cách khác'
       return res.redirect(`${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?errorMessage=${message}`)
     }
+  }
+  @Post('forgot-password')
+  @IsPublic()
+  @ZodSerializerDto(MessageResDTO)
+  async resetPassword(@Body() body: ForgotPasswordBodyDTO) {
+    return this.authService.forgotPassword(body);
   }
 }

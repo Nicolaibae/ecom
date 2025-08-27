@@ -115,6 +115,23 @@ export const GoogleAuthStateSchema = DeviceSchema.pick({
 export const GetAuthorizationUrlResSchema = z.object({
   url: z.string(),
 })
+export const ForgotPasswordBodySchema = z
+  .object({
+    email: z.string(),
+    code: z.string().length(6),
+    newPassword: z.string().min(6).max(100),
+    confirmNewPassword: z.string().min(6).max(100),
+  })
+  .strict()
+  .superRefine(({ confirmNewPassword, newPassword }, ctx) => {
+    if (confirmNewPassword !== newPassword) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Mật khẩu và mật khẩu xác nhận phải giống nhau',
+        path: ['confirmNewPassword'],
+      })
+    }
+  })
 
 
 
@@ -133,3 +150,4 @@ export type LogoutBodyType = RefreshTokenBodyType
 export type GoogleAuthStateType = zInfer<typeof GoogleAuthStateSchema>;
 export type RoleType = zInfer<typeof RoleSchema>;
 export type GetAuthorizationUrlResType = zInfer<typeof GetAuthorizationUrlResSchema>;
+export type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>

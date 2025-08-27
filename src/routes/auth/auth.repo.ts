@@ -108,5 +108,16 @@ export class AuthRepository {
             where: payloadToken
         })
     }
+    UpdateUser(where :{id:number}|{email:string},data:Partial<Omit<UserType,'id'>>):Promise<UserType> { 
+        return this.prismaService.user.update({
+            where,
+            data
+        })
+    }
+    deleteVerificationCode(value:{id:number}|{email:string,type:TypeOfVerificationCodeType}):Promise<VerificationCodeType>{
+        return this.prismaService.verificationCode.delete({
+            where: value
+        })
+    }
 
 }

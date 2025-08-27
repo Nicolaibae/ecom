@@ -14,6 +14,7 @@ import { EmailService } from 'src/shared/services/email.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { AccessTokenPayloadCreate } from 'src/shared/types/jwt.type';
 import { HttpExceptionFilter } from 'src/shared/filters/http-exception.filter';
+import { InvalidOTPException } from './error.model';
 
 @Injectable()
 export class AuthService {
@@ -34,12 +35,7 @@ export class AuthService {
 
             })
             if (!verificationCode) {
-                throw new UnprocessableEntityException([
-                    {
-                        message: 'Mã xác thực không hợp lệ ',
-                        path: 'code',
-                    }
-                ]);
+                throw InvalidOTPException
             }
             // Kiểm tra mã xác thực có hết hạn không
             if (verificationCode.expiredAt < new Date()) {

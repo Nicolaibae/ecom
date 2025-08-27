@@ -7,11 +7,14 @@ import { TypeOfVerificationCodeType } from "src/shared/constants/auth.constant";
 
 
 export class AuthRepository {
+    findUserByEmail(email: string) {
+        throw new Error('Method not implemented.');
+    }
 
     constructor(
         private readonly prismaService: PrismaService
     ) { }
-    async createUser(user: Omit<RegisterBodyType, 'confirmPassword' | 'code'> & Pick<UserType, 'roleId'>): Promise<Omit<UserType, 'password' | 'toptSecret'>> {
+    async createUser(user: Omit<RegisterBodyType, 'confirmPassword' | 'code'> & Pick<UserType, 'email' | 'name' | 'password' | 'phoneNumber' | 'roleId'> & { avatar?: string | null }): Promise<Omit<UserType, 'password' | 'toptSecret'>> {
         return this.prismaService.user.create({
             data: user,
             omit: {
@@ -20,6 +23,16 @@ export class AuthRepository {
 
             }
         });
+    }
+    async createUserInclueRole(
+        user: Pick<UserType, 'email' | 'name' | 'password' | 'phoneNumber' | 'avatar' | 'roleId'>,
+    ): Promise<UserType & { role: RoleType }> {
+        return this.prismaService.user.create({
+            data: user,
+            include: {
+                role: true,
+            },
+        })
     }
     async createVerificationCode(payload: Pick<VerificationCodeType, 'email' | 'type' | 'code' | 'expiredAt'>): Promise<VerificationCodeType> {
         return this.prismaService.verificationCode.upsert({
@@ -82,17 +95,17 @@ export class AuthRepository {
             }
         })
     }
-    UpdateDevice(deviceId: number, data: Partial<DeviceType>):Promise<DeviceType>{
+    UpdateDevice(deviceId: number, data: Partial<DeviceType>): Promise<DeviceType> {
         return this.prismaService.device.update({
-            where:{
-                id:deviceId
+            where: {
+                id: deviceId
             },
             data
         })
     }
-    DeleteRefreshToken(payloadToken: {token:string}):Promise<RefreshTokenType>{
+    DeleteRefreshToken(payloadToken: { token: string }): Promise<RefreshTokenType> {
         return this.prismaService.refreshToken.delete({
-            where:payloadToken
+            where: payloadToken
         })
     }
 

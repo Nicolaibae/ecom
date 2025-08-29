@@ -6,6 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class TokenService {
+    generateTwoFactorSecret(arg0: { name: string; account: string; }): { secret: any; uri: any; } {
+      throw new Error('Method not implemented.');
+    }
     constructor(
         private readonly jwtService: JwtService,
     ) { }

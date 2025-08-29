@@ -10,15 +10,16 @@ import { AuthenticationGuard } from './guards/authentication.guard';
 import { share } from 'rxjs';
 import { ShareUserRepository } from './repositories/share-user.repo';
 import { EmailService } from './services/email.service';
+import { TwoFactorService } from './services/2fa.service';
 
 @Global()
 @Module({
-    providers: [PrismaService, HashingService, TokenService, AccessTokenGuard, APIKeyGuard, ShareUserRepository,EmailService,
+    providers: [PrismaService, HashingService, TokenService, AccessTokenGuard, APIKeyGuard, ShareUserRepository,EmailService,TwoFactorService,
         {
             provide: APP_GUARD,
             useClass: AuthenticationGuard
         }],
-    exports: [PrismaService, AccessTokenGuard, APIKeyGuard, HashingService, TokenService,ShareUserRepository,EmailService],
+    exports: [PrismaService, AccessTokenGuard, APIKeyGuard, HashingService, TokenService,ShareUserRepository,EmailService,TwoFactorService],
     imports: [JwtModule],
 })
 export class SharedModule { }

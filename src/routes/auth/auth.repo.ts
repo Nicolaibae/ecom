@@ -50,19 +50,19 @@ export class AuthRepository {
         });
     }
     async findVerificationCode(
-        uniqueValue: { email: string, code: string, type: TypeOfVerificationCodeType }
-    ): Promise<VerificationCodeType | null> {
-        return this.prismaService.verificationCode.findFirst({
-            where: {
-
-                email: uniqueValue.email,
-                code: uniqueValue.code,
-                type: uniqueValue.type
-
-
-            }
-        });
-    }
+    uniqueValue:
+      | { id: number }
+      | {
+          email_type: {
+            email: string
+            type: TypeOfVerificationCodeType
+          }
+        },
+  ): Promise<VerificationCodeType | null> {
+    return this.prismaService.verificationCode.findUnique({
+      where: uniqueValue,
+    }) as any
+  }
     async createRefreshToken(data: { token: string, userId: number, expiresAt: Date, deviceId: number }) {
         return await this.prismaService.refreshToken.create({
             data

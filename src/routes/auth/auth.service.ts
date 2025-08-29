@@ -1,20 +1,19 @@
-import { ConflictException, HttpException, Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { RolesService } from './role.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { generateOtp, isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helper';
-import { ForgotPasswordBodyType, LoginBodyType, RefreshTokenBodyType, RefreshTokenType, RegisterBodyType, SendOtpBodyType } from './auth.model';
+import { ForgotPasswordBodyType, LoginBodyType, RefreshTokenBodyType, RegisterBodyType, SendOtpBodyType } from './auth.model';
 import { AuthRepository } from './auth.repo';
 import { ShareUserRepository } from 'src/shared/repositories/share-user.repo';
 import ms from 'ms';
 import { addMilliseconds } from 'date-fns';
 import envConfig from 'src/shared/config';
 import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
-import path from 'path';
 import { EmailService } from 'src/shared/services/email.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { AccessTokenPayloadCreate } from 'src/shared/types/jwt.type';
-import { HttpExceptionFilter } from 'src/shared/filters/http-exception.filter';
-import { EmailAlreadyExistsException, EmailNotFoundException, FailedToSendOTPException, InvalidOTPException, InvalidPasswordException, OTPExpiredException, RefreshTokenAlreadyUsedException, UnauthorizedAccessException } from './error.model';
+import { EmailAlreadyExistsException, EmailNotFoundException, FailedToSendOTPException, InvalidOTPException, InvalidPasswordException, OTPExpiredException, RefreshTokenAlreadyUsedException, TOTPAlreadyEnabledException, UnauthorizedAccessException } from './error.model';
+import { TwoFactorService } from 'src/shared/services/2fa.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +24,7 @@ export class AuthService {
     private readonly sharedUserRepository: ShareUserRepository,
     private readonly emailService: EmailService,
     private readonly tokenService: TokenService,
+    private readonly twoFactorService: TwoFactorService
   ) { }
   async validateVerificationCode({
     email,
@@ -36,9 +36,10 @@ export class AuthService {
     type: TypeOfVerificationCodeType
   }) {
     const vevificationCode = await this.authRepository.findVerificationCode({
-      email,
-      code,
-      type,
+      email_type: {
+        email,
+        type,
+      }
     })
     if (!vevificationCode) {
       throw InvalidOTPException
@@ -86,12 +87,12 @@ export class AuthService {
     const user = await this.sharedUserRepository.findUnique({
       email: body.email,
     })
-    if (body.type === TypeOfVerificationCode.REGISTER &&user) {
+    if (body.type === TypeOfVerificationCode.REGISTER && user) {
       throw EmailAlreadyExistsException
     }
     if (body.type === TypeOfVerificationCode.FORGOT_PASSWORD && !user) {
       throw EmailNotFoundException
-    } 
+    }
 
     // 2. Tạo mã OTP
     const code = generateOtp()
@@ -261,6 +262,26 @@ export class AuthService {
     return {
       message: 'Đổi mật khẩu thành công',
     }
+  }
+  async setupTwoFactorAuth(userId: number) {
+   
+    // 1. Lấy thông tin user, kiểm tra xem user có tồn tại hay không, và xem họ đã bật 2FA chưa
+    const user = await this.sharedUserRepository.findUnique({ id: userId })
+    if (!user) {
+      throw UnauthorizedAccessException
+    }
+    if(user.toptSecret){
+      throw TOTPAlreadyEnabledException
+    }
+    // 2. Tạo ra secret và uri
+    const { secret, uri } = this.twoFactorService.generateTOTPSecret(user.email)
+    
+    // 3. Cập nhật secret vào user trong database
+    await this.authRepository.UpdateUser({ id: userId }, { toptSecret: secret })
+    console.log('userId');
+    // 4. Trả về secret và uri
+     
+    return { secret, uri }
   }
 }
 

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Ip, Post, Query, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import {  ForgotPasswordBodyDTO, LoginBodyDto, LoginResDto, LogoutBodyDTO, RefreshTokenBodyDTO, RefreshTokenResDTO, RegisterBodyDto, RegisterResDto, SendOtpBody } from './auth.dto';
+import { ForgotPasswordBodyDTO, LoginBodyDto, LoginResDto, LogoutBodyDTO, RefreshTokenBodyDTO, RefreshTokenResDTO, RegisterBodyDto, RegisterResDto, SendOtpBody, TwoFactorSetupResDTO } from './auth.dto';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator';
 import { MessageResDTO } from 'src/shared/dtos/reponse.dto';
@@ -9,6 +9,8 @@ import { GoogleService } from './google.service';
 import envConfig from 'src/shared/config';
 import express from 'express';
 import { th } from 'zod/v4/locales';
+import { EmptyBodyDTO } from 'src/shared/dtos/request.dto';
+import { ActiveUser } from 'src/shared/decorators/active-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -68,7 +70,7 @@ export class AuthController {
   @Get('google/callback')
   @IsPublic()
   async getAuthorizationCallback(@Query('code') code: string, @Query('state') state: string, @Res() res: express.Response) {
-     try {
+    try {
       const data = await this.googleService.googleCallback({
         code,
         state,
@@ -89,5 +91,10 @@ export class AuthController {
   @ZodSerializerDto(MessageResDTO)
   async resetPassword(@Body() body: ForgotPasswordBodyDTO) {
     return this.authService.forgotPassword(body);
+  }
+  @Post('2fa/setup')
+  @ZodSerializerDto(TwoFactorSetupResDTO)
+  setupTwoFactorAuth(@Body() _: EmptyBodyDTO, @ActiveUser("userId") userId: number) {
+    return this.authService.setupTwoFactorAuth(userId)
   }
 }

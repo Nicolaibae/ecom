@@ -93,7 +93,7 @@ export class AuthRepository {
                     }
                 }
             }
-        })
+        });
     }
     UpdateDevice(deviceId: number, data: Partial<DeviceType>): Promise<DeviceType> {
         return this.prismaService.device.update({
@@ -108,16 +108,26 @@ export class AuthRepository {
             where: payloadToken
         })
     }
-    UpdateUser(where :{id:number}|{email:string},data:Partial<Omit<UserType,'id'>>):Promise<UserType> { 
+    UpdateUser(where: { id: number } | { email: string }, data: Partial<Omit<UserType, 'id'>>): Promise<UserType> {
         return this.prismaService.user.update({
             where,
             data
         })
     }
-    deleteVerificationCode(value:{id:number}|{email:string,type:TypeOfVerificationCodeType}):Promise<VerificationCodeType>{
+    DeleteVerificationCode(
+        uniqueValue:
+            | { id: number }
+            | {
+                email_type: {
+                    email: string,
+                    type: TypeOfVerificationCodeType
+                }
+            },
+    ): Promise<VerificationCodeType> {
         return this.prismaService.verificationCode.delete({
-            where: value
-        })
+            where: uniqueValue,
+        }) as any
     }
-
 }
+
+

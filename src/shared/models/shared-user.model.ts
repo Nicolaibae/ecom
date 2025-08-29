@@ -8,7 +8,7 @@ export const UserSchema = z.object({
     password: z.string().min(6).max(50),
     phoneNumber: z.string().min(10).max(15),
     avatar: z.string().nullable(),
-    toptSecret: z.string().nullable().optional(),
+    totpSecret: z.string().nullable().optional(),
     status: z.enum([UserStatus.ACTIVE, UserStatus.INACTIVE, UserStatus.BLOCKED]),
     roleId: z.number().positive(),
     createdById: z.number().nullable(),

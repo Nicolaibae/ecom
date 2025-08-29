@@ -68,6 +68,13 @@ export const InvalidTOTPAndCodeException = new UnprocessableEntityException([
     path: 'code',
   },
 ])
+export const InvalidTOTPException = new UnprocessableEntityException([
+  {
+    message: 'Error.InvalidTOTP',
+    path: 'totpCode',
+  },
+])
+
 
 // Auth token related errors
 export const RefreshTokenAlreadyUsedException = new UnauthorizedException('Error.RefreshTokenAlreadyUsed')

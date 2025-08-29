@@ -10,4 +10,14 @@ export class ShareUserRepository {
             where: uniqueObject
         });
     }
+     update(where: { id: number }, data: Partial<UserType>): Promise<UserType> {
+    return this.prismaService.user.update({
+      where: {
+        ...where,
+        deletedAt: null,
+      },
+      data,
+    }) as any
+  }
+
 }

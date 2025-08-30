@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Ip, Post, Query, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { DisableTwoFactorBodyDTO, ForgotPasswordBodyDTO, LoginBodyDto, LoginResDto, LogoutBodyDTO, RefreshTokenBodyDTO, RefreshTokenResDTO, RegisterBodyDto, RegisterResDto, SendOtpBody, TwoFactorSetupResDTO } from './auth.dto';
-import { ZodSerializerDto } from 'nestjs-zod';
+import { ZodResponse, ZodSerializerDto } from 'nestjs-zod';
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator';
 import { MessageResDTO } from 'src/shared/dtos/reponse.dto';
 import { IsPublic } from 'src/shared/decorators/auth.decorator';
@@ -20,20 +20,20 @@ export class AuthController {
   ) { }
   @Post('register')
   @IsPublic()
-  @ZodSerializerDto(RegisterResDto)
+  @ZodResponse({ type: RegisterResDto })
   async register(@Body() body: RegisterBodyDto) {
 
     return await this.authService.register(body);
   }
   @Post('otp')
   @IsPublic()
-  @ZodSerializerDto(MessageResDTO)
+  @ZodResponse({ type: MessageResDTO })
   async sendOtp(@Body() body: SendOtpBody) {
     return await this.authService.sendOTP(body);
   }
   @Post('login')
   @IsPublic()
-  @ZodSerializerDto(LoginResDto)
+  @ZodResponse({ type: LoginResDto })
   async login(@Body() body: LoginBodyDto, @UserAgent() userAgent: string, @Ip() ip: string) {
     return this.authService.login({
       ...body,
@@ -45,7 +45,7 @@ export class AuthController {
   @Post('refresh-token')
   @IsPublic()
   @HttpCode(HttpStatus.OK)
-  @ZodSerializerDto(RefreshTokenResDTO)
+  @ZodResponse({ type: RefreshTokenResDTO })
   async refreshToken(@Body() body: RefreshTokenBodyDTO, @UserAgent() userAgent: string, @Ip() ip: string) {
     return this.authService.refreshToken({
       refreshToken: body.refreshToken,
@@ -55,7 +55,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  @ZodSerializerDto(MessageResDTO)
+  @ZodResponse({ type: MessageResDTO })
   async logout(@Body() body: LogoutBodyDTO) {
     return this.authService.logout(body.refreshToken)
   }
@@ -88,18 +88,18 @@ export class AuthController {
   }
   @Post('forgot-password')
   @IsPublic()
-  @ZodSerializerDto(MessageResDTO)
+  @ZodResponse({type:MessageResDTO})
   async resetPassword(@Body() body: ForgotPasswordBodyDTO) {
     return this.authService.forgotPassword(body);
   }
   @Post('2fa/setup')
-  @ZodSerializerDto(TwoFactorSetupResDTO)
+  @ZodResponse({type:TwoFactorSetupResDTO})
   setupTwoFactorAuth(@Body() _: EmptyBodyDTO, @ActiveUser("userId") userId: number) {
     return this.authService.setupTwoFactorAuth(userId)
   }
 
   @Post('2fa/disable')
-  @ZodSerializerDto(MessageResDTO)
+  @ZodResponse({type:MessageResDTO})
   disableTwoFactorAuth(@Body() body: DisableTwoFactorBodyDTO, @ActiveUser('userId') userId: number) {
     return this.authService.disableTwoFactorAuth({
       ...body,

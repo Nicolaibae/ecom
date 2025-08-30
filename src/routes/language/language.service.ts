@@ -5,11 +5,16 @@ import { NotFoundRecordException } from 'src/shared/error';
 import { isUniqueConstraintPrismaError } from 'src/shared/helper';
 import { LanguageAlreadyExistsException } from './language.error';
 
+
 @Injectable()
 export class LanguageService {
     constructor(private readonly languageRepo: LanguageRepository) { }
     async findAll() {
-        return this.languageRepo.findAll();
+        const data = await this.languageRepo.findAll();
+        return {
+            data,
+            total: data.length
+        }
     }
     async findById(id: string) {
         const language = await this.languageRepo.findById(id)
@@ -18,14 +23,11 @@ export class LanguageService {
         }
         return language;
     }
-    async create({ data, createdById }: { data: CreateLanguageBodyType, createdById: number }) {
+    async create({ data, createdById }: { data: CreateLanguageBodyType; createdById: number }) {
         try {
-            return this.languageRepo.create({
-                data: {
-                    ...data,
-                     createdById 
-                } ,
-                
+            return await this.languageRepo.create({
+                createdById,
+                data,
             })
         } catch (error) {
             if (isUniqueConstraintPrismaError(error)) {
@@ -34,6 +36,7 @@ export class LanguageService {
             throw error
         }
     }
-
 }
+
+
 

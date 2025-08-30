@@ -27,7 +27,7 @@ export class LanguageRepository {
             data: {
                 ...data,
                 createdById
-            },
+            }
         }) as any
     }
 

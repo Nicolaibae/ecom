@@ -13,9 +13,9 @@ export const UserSchema = z.object({
     roleId: z.number().positive(),
     createdById: z.number().nullable(),
     updatedById: z.number().nullable(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
-    deletedAt: z.date().nullable(),
-    
+    deletedAt: z.iso.datetime().nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+
 })
 export type UserType = z.Infer<typeof UserSchema>;

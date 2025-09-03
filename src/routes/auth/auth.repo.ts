@@ -3,8 +3,9 @@ import { PrismaService } from "src/shared/services/prisma.service";
 import { DeviceType, RefreshTokenType, RegisterBodyType, RoleType, VerificationCodeType } from "./auth.model";
 import { UserType } from "src/shared/models/shared-user.model";
 import { TypeOfVerificationCodeType } from "src/shared/constants/auth.constant";
+import { SerializeAll } from "src/shared/decorators/serialize.decorator";
 @Injectable()
-
+@SerializeAll()
 
 export class AuthRepository {
     findUserByEmail(email: string) {
@@ -22,7 +23,7 @@ export class AuthRepository {
                 totpSecret: true,
 
             }
-        });
+        }) as any;
     }
     async createUserInclueRole(
         user: Pick<UserType, 'email' | 'name' | 'password' | 'phoneNumber' | 'avatar' | 'roleId'>,
@@ -32,7 +33,7 @@ export class AuthRepository {
             include: {
                 role: true,
             },
-        })
+        }) as any;
     }
     async createVerificationCode(payload: Pick<VerificationCodeType, 'email' | 'type' | 'code' | 'expiredAt'>): Promise<VerificationCodeType> {
         return this.prismaService.verificationCode.upsert({
@@ -79,7 +80,7 @@ export class AuthRepository {
             include: {
                 role: true
             }
-        });
+        })  as any;
     }
     async findUniqueRefreshokenIncludeUserRole(uniqueToken: { token: string }): Promise<
         RefreshTokenType & { user: UserType & { role: RoleType } } | null
@@ -93,7 +94,7 @@ export class AuthRepository {
                     }
                 }
             }
-        });
+        }) as any;
     }
     UpdateDevice(deviceId: number, data: Partial<DeviceType>): Promise<DeviceType> {
         return this.prismaService.device.update({
@@ -112,7 +113,7 @@ export class AuthRepository {
         return this.prismaService.user.update({
             where,
             data
-        })
+        }) as any;
     }
     DeleteVerificationCode(
         uniqueValue:

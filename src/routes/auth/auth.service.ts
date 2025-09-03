@@ -12,7 +12,7 @@ import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/c
 import { EmailService } from 'src/shared/services/email.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { AccessTokenPayloadCreate } from 'src/shared/types/jwt.type';
-import { EmailAlreadyExistsException, EmailNotFoundException, FailedToSendOTPException, InvalidOTPException, InvalidPasswordException, InvalidTOTPAndCodeException, InvalidTOTPException, OTPExpiredException, RefreshTokenAlreadyUsedException, TOTPAlreadyEnabledException, TOTPNotEnabledException, UnauthorizedAccessException } from './error.model';
+import { EmailAlreadyExistsException, EmailNotFoundException, FailedToSendOTPException, InvalidOTPException, InvalidPasswordException, InvalidTOTPAndCodeException, InvalidTOTPException, OTPExpiredException, RefreshTokenAlreadyUsedException, TOTPAlreadyEnabledException, TOTPNotEnabledException, UnauthorizedAccessException } from './auth.error';
 import { TwoFactorService } from 'src/shared/services/2fa.service';
 import { th } from 'zod/v4/locales';
 

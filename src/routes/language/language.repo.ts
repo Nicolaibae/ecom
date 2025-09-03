@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/shared/services/prisma.service";
-import { CreateLanguageBodyType, LanguageType } from "./language.model";
+import { CreateLanguageBodyType, LanguageType, UpdateLanguageBodyType } from "./language.model";
+import { SerializeAll } from "src/shared/decorators/serialize.decorator";
 
 @Injectable()
-
+@SerializeAll()
 
 export class LanguageRepository {
     constructor(
@@ -29,6 +30,29 @@ export class LanguageRepository {
                 createdById
             }
         }) as any
+    }
+    update({id,updatedById,data}:{id:string,data:UpdateLanguageBodyType,updatedById:number}){
+        return this.prismaService.language.update({
+            where:{
+                id,
+                deletedAt:null,
+            },
+            data:{
+                ...data,
+                updatedById,
+            }
+        }) as any
+    }
+    delete(id: string, hard?:boolean) {
+        return (
+            hard ? this.prismaService.language.delete({
+                where: { id }
+            }) : this.prismaService.language.update({
+                where: { id, deletedAt: null },
+                data: { deletedAt: new Date() }
+            }) as any
+        )
+
     }
 
 }

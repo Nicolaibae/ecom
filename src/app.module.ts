@@ -10,10 +10,14 @@ import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 import { CatchEverythingFilter } from './shared/filters/catch-everything.filter';
 import { LanguageController } from './routes/language/language.controller';
 import { LanguageModule } from './routes/language/language.module';
+import { PermissionController } from './routes/permission/permission.controller';
+import { PermissionModule } from './routes/permission/permission.module';
+import { CoModule } from './s/co/co.module';
+import { RoleModule } from './routes/role/role.module';
 
 @Module({
-  imports: [SharedModule, AuthModule, LanguageModule],
-  controllers: [AppController, LanguageController],
+  imports: [SharedModule, AuthModule, LanguageModule, PermissionModule, CoModule, RoleModule],
+  controllers: [AppController, LanguageController, PermissionController],
   providers: [
     AppService,
     {
@@ -28,10 +32,10 @@ import { LanguageModule } from './routes/language/language.module';
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
-    {
-      provide: APP_FILTER,
-      useClass: CatchEverythingFilter,
-    }
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: CatchEverythingFilter,
+    // }
   ],
 })
 export class AppModule {}

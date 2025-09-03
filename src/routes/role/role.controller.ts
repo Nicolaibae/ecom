@@ -1,7 +1,11 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { ZodResponse } from 'nestjs-zod';
-import { GetRolesQueryDTO, GetRolesResDTO } from './role.dto';
+import { CreateRoleBodyDTO, CreateRoleResDTO, GetRoleDetailResDTO, GetRoleParamsDTO, GetRolesQueryDTO, GetRolesResDTO, UpdateRoleBodyDTO } from './role.dto';
+import { ActiveUser } from 'src/shared/decorators/active-user.decorator';
+import { UpdateRoleBodyType } from './role.model';
+import { MessageResDTO } from 'src/shared/dtos/reponse.dto';
+
 
 @Controller('role')
 export class RoleController {
@@ -16,4 +20,35 @@ export class RoleController {
             limit: query.limit,
         })
     }
+    @Get(':roleId')
+    @ZodResponse({type: GetRoleDetailResDTO})
+    findById(@Query() query: GetRoleParamsDTO){
+        return this.roleService.findById(query.roleId)
+    }
+    @Post()
+    @ZodResponse({type: CreateRoleResDTO})
+    create(@Body() body: CreateRoleBodyDTO, @ActiveUser('userId') userId:number){
+        return this.roleService.create({
+            data: body,
+            createdById: userId,
+        } )
+    }
+    @Put(":roleId")
+    @ZodResponse({type: GetRoleDetailResDTO})
+    update(@Body() body: UpdateRoleBodyDTO, @Param() params: GetRoleParamsDTO,@ActiveUser('userId') userId:number ){
+        return this.roleService.update({
+            data: body,
+            id: params.roleId,
+            updatedById: userId,
+        })
+    }
+    @Delete(":roleId")
+    @ZodResponse({type: MessageResDTO})
+    delete(@Param() params: GetRoleParamsDTO,@ActiveUser('userId') userId:number ){
+       return this.roleService.delete({
+        id: params.roleId,
+        deletedById: userId,
+       })
+    }
+
 }

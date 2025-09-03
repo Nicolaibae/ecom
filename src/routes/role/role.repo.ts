@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { SerializeAll } from "src/shared/decorators/serialize.decorator";
 import { PrismaService } from "src/shared/services/prisma.service";
-import { GetRolesQueryType, GetRolesResType } from "./role.model";
+import { CreateRoleBodyType, GetRolesQueryType, GetRolesResType, RoleType, RoleWithPermissionsType, UpdateRoleBodyType } from "./role.model";
 
 @Injectable()
 @SerializeAll()
@@ -33,4 +33,72 @@ export class RoleRepository {
             totalPages: Math.ceil(totalItems / pagination.limit),
         }
     }
+    async finndById(id: number): Promise<RoleWithPermissionsType | null> {
+        return this.prismaService.role.findUnique({
+            where: {
+                id,
+                deletedAt: null,
+            },
+            include: {
+                permissions: true,
+            },
+        })
+    }
+    async create({ data, createdById }: { data: CreateRoleBodyType, createdById: number }): Promise<RoleType> {
+        return this.prismaService.role.create({
+            data: {
+                ...data,
+                createdById,
+            },
+        })
+    }
+    async update({ data, updatedById, id }: { data: UpdateRoleBodyType, id: number, updatedById: number }): Promise<RoleWithPermissionsType> {
+        // Kiểm tra nếu có bất cứ permissionId nào mà đã soft delete thì không cho phép cập nhật
+        if (data.permissionIds.length > 0) {
+            const permission = await this.prismaService.permission.findMany({
+                where: {
+                    id: { in: data.permissionIds },
+                    deletedAt: null,
+                },
+            })
+            // Trả về danh sách permission đã bị xóa mềm
+            const TotalDeletedPermission = permission.filter((permission) => permission.deletedAt)
+            if (TotalDeletedPermission.length > 0) {
+                const deletedIds = TotalDeletedPermission.map((permission) => permission.id).join(', ')
+                throw new Error(`Permission with id has been deleted: ${deletedIds}`)
+            }
+        }
+
+        return this.prismaService.role.update({
+            where: {
+                id,
+                deletedAt: null,
+            },
+            data: {
+                name: data.name,
+                description: data.description,
+                isActive: data.isActive,
+                permissions: {
+                    set: data.permissionIds.map((id) => ({ id })),
+                },
+                updatedById,
+            },
+            include: {
+                permissions: {
+                    where: {
+                        deletedAt: null,
+                    },
+                },
+            },
+        })
+    }
+    async delete({ id, deletedById }: { id: number; deletedById: number }) {
+        return this.prismaService.role.delete({
+            where: {
+                id,
+                deletedAt: null,
+            },
+        })
+    }
+
 }

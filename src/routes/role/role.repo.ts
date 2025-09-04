@@ -31,7 +31,7 @@ export class RoleRepository {
             page: pagination.page,
             limit: pagination.limit,
             totalPages: Math.ceil(totalItems / pagination.limit),
-        }
+        } as any
     }
     async finndById(id: number): Promise<RoleWithPermissionsType | null> {
         return this.prismaService.role.findUnique({
@@ -40,25 +40,28 @@ export class RoleRepository {
                 deletedAt: null,
             },
             include: {
-                permissions: true,
+                permissions: {
+                    where: {
+                        deletedAt: null,
+                    }
+                },
             },
-        })
+        }) as any
     }
-    async create({ data, createdById }: { data: CreateRoleBodyType, createdById: number }): Promise<RoleType> {
+    async create({ data, createdById }: { data: CreateRoleBodyType, createdById: number | null }): Promise<RoleType> {
         return this.prismaService.role.create({
             data: {
                 ...data,
                 createdById,
             },
-        })
+        }) as any
     }
-    async update({ data, updatedById, id }: { data: UpdateRoleBodyType, id: number, updatedById: number }): Promise<RoleWithPermissionsType> {
+    async update({ data, updatedById, id }: { data: UpdateRoleBodyType, id: number, updatedById: number | null }): Promise<RoleWithPermissionsType> {
         // Kiểm tra nếu có bất cứ permissionId nào mà đã soft delete thì không cho phép cập nhật
         if (data.permissionIds.length > 0) {
             const permission = await this.prismaService.permission.findMany({
                 where: {
                     id: { in: data.permissionIds },
-                    deletedAt: null,
                 },
             })
             // Trả về danh sách permission đã bị xóa mềm
@@ -90,15 +93,36 @@ export class RoleRepository {
                     },
                 },
             },
-        })
+        }) as any
     }
-    async delete({ id, deletedById }: { id: number; deletedById: number }) {
-        return this.prismaService.role.delete({
-            where: {
-                id,
-                deletedAt: null,
-            },
-        })
+    delete(
+        {
+            id,
+            deletedById,
+        }: {
+            id: number
+            deletedById: number
+        },
+        isHard?: boolean,
+    ): Promise<RoleType> {
+        return (
+            isHard
+                ? this.prismaService.role.delete({
+                    where: {
+                        id,
+                    },
+                })
+                : this.prismaService.role.update({
+                    where: {
+                        id,
+                        deletedAt: null,
+                    },
+                    data: {
+                        deletedAt: new Date(),
+                        deletedById,
+                    },
+                })
+        ) as any
     }
 
 }

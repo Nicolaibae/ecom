@@ -12,11 +12,10 @@ import { LanguageController } from './routes/language/language.controller';
 import { LanguageModule } from './routes/language/language.module';
 import { PermissionController } from './routes/permission/permission.controller';
 import { PermissionModule } from './routes/permission/permission.module';
-import { CoModule } from './s/co/co.module';
 import { RoleModule } from './routes/role/role.module';
 
 @Module({
-  imports: [SharedModule, AuthModule, LanguageModule, PermissionModule, CoModule, RoleModule],
+  imports: [SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule],
   controllers: [AppController, LanguageController, PermissionController],
   providers: [
     AppService,

@@ -22,8 +22,8 @@ export class RoleController {
     }
     @Get(':roleId')
     @ZodResponse({type: GetRoleDetailResDTO})
-    findById(@Query() query: GetRoleParamsDTO){
-        return this.roleService.findById(query.roleId)
+    findById(@Param() params: GetRoleParamsDTO){
+        return this.roleService.findById(params.roleId)
     }
     @Post()
     @ZodResponse({type: CreateRoleResDTO})

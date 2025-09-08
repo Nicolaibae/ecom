@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { RoleRepository } from './role.repo';
 import { CreateRoleBodyType, GetRolesQueryType, UpdateRoleBodyType } from './role.model';
-import { RoleAlreadyExistsException } from './role.error';
+import { ProhibitedActionOnBaseRoleException, RoleAlreadyExistsException } from './role.error';
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helper';
 import { NotFoundRecordException } from 'src/shared/error';
+import { RoleName } from 'src/shared/constants/role.constant';
 
 @Injectable()
 export class RoleService {
@@ -12,7 +13,7 @@ export class RoleService {
         return this.roleRepo.list(pagination)
     }
     async findById(id: number) {
-        const role = await this.roleRepo.finndById(id)
+        const role = await this.roleRepo.findById(id)
         if (!role) {
             throw RoleAlreadyExistsException
         }
@@ -31,12 +32,13 @@ export class RoleService {
     }
     async update({ id, data, updatedById }: { id: number; data: UpdateRoleBodyType; updatedById: number }) {
         try {
-            const role = await this.roleRepo.update({
+            await this.verifyRole(id)
+            const UpdatedRole = await this.roleRepo.update({
                 id,
                 updatedById,
                 data,
             })
-            return role
+            return UpdatedRole
         } catch (error) {
             if (isNotFoundPrismaError(error)) {
                 throw NotFoundRecordException
@@ -49,6 +51,7 @@ export class RoleService {
     }
     async delete({ id, deletedById }: { id: number; deletedById: number }) {
         try {
+            await this.verifyRole(id)
             await this.roleRepo.delete({ id, deletedById })
             return {
                 message: 'Delete successfully',
@@ -58,6 +61,20 @@ export class RoleService {
                 throw NotFoundRecordException
             }
             throw error
+        }
+    }
+    /**
+  * Kiểm tra xem role có phải là 1 trong 3 role cơ bản không
+  */
+    private async verifyRole(roleId: number) {
+        const role = await this.roleRepo.findById(roleId)
+        if (!role) {
+            throw NotFoundRecordException
+        }
+        const baseRoles: string[] = [RoleName.Admin, RoleName.Client, RoleName.Seller]
+
+        if (baseRoles.includes(role.name)) {
+            throw ProhibitedActionOnBaseRoleException
         }
     }
 }

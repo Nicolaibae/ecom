@@ -33,7 +33,7 @@ export class RoleRepository {
             totalPages: Math.ceil(totalItems / pagination.limit),
         } as any
     }
-    async finndById(id: number): Promise<RoleWithPermissionsType | null> {
+    async findById(id: number): Promise<RoleWithPermissionsType | null> {
         return this.prismaService.role.findUnique({
             where: {
                 id,

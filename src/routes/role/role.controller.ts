@@ -5,6 +5,7 @@ import { CreateRoleBodyDTO, CreateRoleResDTO, GetRoleDetailResDTO, GetRoleParams
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator';
 import { UpdateRoleBodyType } from './role.model';
 import { MessageResDTO } from 'src/shared/dtos/reponse.dto';
+import { IsPublic } from 'src/shared/decorators/auth.decorator';
 
 
 @Controller('role')
@@ -15,6 +16,7 @@ export class RoleController {
     @Get()
     @ZodResponse({type: GetRolesResDTO})
     list(@Query() query: GetRolesQueryDTO){
+        console.log('1')
         return this.roleService.list({
             page: query.page,
             limit: query.limit,

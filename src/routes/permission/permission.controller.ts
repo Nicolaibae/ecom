@@ -13,6 +13,7 @@ export class PermissionController {
     @Get()
     @ZodResponse({ type: GetPermissionsResDTO })
     list(@Query() query: GetPermissionsQueryDTO) {
+        
         return this.permissionService.list({
             page: query.page,
             limit: query.limit,

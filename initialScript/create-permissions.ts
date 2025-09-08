@@ -3,13 +3,11 @@ import { AppModule } from 'src/app.module'
 import { HTTPMethod, RoleName } from 'src/shared/constants/role.constant'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
-const SellerModule = ['AUTH', 'MEDIA', 'MANAGE-PRODUCT', 'PRODUCT-TRANSLATION', 'PROFILE', 'CART', 'ORDERS', 'REVIEWS']
-const ClientModule = ['AUTH', 'MEDIA', 'PROFILE', 'CART', 'ORDERS', 'REVIEWS']
 const prisma = new PrismaService()
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
-  await app.listen(4010)
+  await app.listen(3010)
   const server = app.getHttpAdapter().getInstance()
   const router = server.router
   const permissionsInDb = await prisma.permission.findMany({
@@ -17,30 +15,26 @@ async function bootstrap() {
       deletedAt: null,
     },
   })
-  const availableRoutes: { path: string; method: keyof typeof HTTPMethod; name: string; module: string }[] =
-    router.stack
-      .map((layer) => {
-        if (layer.route) {
-          const path = layer.route?.path
-          const method = String(layer.route?.stack[0].method).toUpperCase() as keyof typeof HTTPMethod
+  const availableRoutes: { path: string; method: keyof typeof HTTPMethod; name: string }[] = router.stack
+    .map((layer) => {
+      if (layer.route) {
+        const path = layer.route?.path
+        const method = String(layer.route?.stack[0].method).toUpperCase() as keyof typeof HTTPMethod
           const moduleName = String(path.split('/')[1]).toUpperCase()
-          return {
-            path,
-            method,
-            name: method + ' ' + path,
-            module: moduleName,
-          }
+        return {
+          path,
+          method,
+          name: method + ' ' + path,
+          module: moduleName,
         }
-      })
-      .filter((item) => item !== undefined)
-
-    
+      }
+    })
+    .filter((item) => item !== undefined)
   // Tạo object permissionInDbMap với key là [method-path]
   const permissionInDbMap: Record<string, (typeof permissionsInDb)[0]> = permissionsInDb.reduce((acc, item) => {
     acc[`${item.method}-${item.path}`] = item
     return acc
   }, {})
-
   // Tạo object availableRoutesMap với key là [method-path]
   const availableRoutesMap: Record<string, (typeof availableRoutes)[0]> = availableRoutes.reduce((acc, item) => {
     acc[`${item.method}-${item.path}`] = item
@@ -85,39 +79,24 @@ async function bootstrap() {
       deletedAt: null,
     },
   })
-  const adminPermissionIds = updatedPermissionsInDb.map((item) => ({ id: item.id }))
-  const sellerPermissionIds = updatedPermissionsInDb
-    .filter((item) => SellerModule.includes(item.module))
-    .map((item) => ({ id: item.id }))
-  const clientPermissionIds = updatedPermissionsInDb
-    .filter((item) => ClientModule.includes(item.module))
-    .map((item) => ({ id: item.id }))
-
-  await Promise.all([
-    updateRole(adminPermissionIds, RoleName.Admin),
-    updateRole(sellerPermissionIds, RoleName.Seller),
-    updateRole(clientPermissionIds, RoleName.Client),
-  ])
-  process.exit(0)
-}
-
-const updateRole = async (permissionIds: { id: number }[], roleName: string) => {
   // Cập nhật lại các permissions trong Admin Role
-  const role = await prisma.role.findFirstOrThrow({
+  const adminRole = await prisma.role.findFirstOrThrow({
     where: {
-      name: roleName,
+      name: RoleName.Admin,
       deletedAt: null,
     },
   })
   await prisma.role.update({
     where: {
-      id: role.id,
+      id: adminRole.id,
     },
     data: {
       permissions: {
-        set: permissionIds,
+        set: updatedPermissionsInDb.map((item) => ({ id: item.id })),
       },
     },
   })
+
+  process.exit(0)
 }
 bootstrap()

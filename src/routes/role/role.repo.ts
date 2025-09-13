@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { SerializeAll } from "src/shared/decorators/serialize.decorator";
 import { PrismaService } from "src/shared/services/prisma.service";
-import { CreateRoleBodyType, GetRolesQueryType, GetRolesResType, RoleType, RoleWithPermissionsType, UpdateRoleBodyType } from "./role.model";
+import { CreateRoleBodyType, GetRolesQueryType, GetRolesResType, RoleWithPermissionsType, UpdateRoleBodyType } from "./role.model";
+import { RoleType } from "src/shared/models/shared-role.model";
 
 @Injectable()
 @SerializeAll()

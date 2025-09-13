@@ -37,13 +37,7 @@ export const EmailNotFoundException = new UnprocessableEntityException([
   },
 ])
 
-// Password related errors
-export const InvalidPasswordException = new UnprocessableEntityException([
-  {
-    message: 'Error.InvalidPassword',
-    path: 'password',
-  },
-])
+
 export const TOTPAlreadyEnabledException = new UnprocessableEntityException([
   {
     message: 'Error.TOTPAlreadyEnabled',

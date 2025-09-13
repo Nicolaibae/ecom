@@ -1,5 +1,4 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { RolesService } from './role.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { generateOtp, isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helper';
 import { DisableTwoFactorBodyType, ForgotPasswordBodyType, LoginBodyType, RefreshTokenBodyType, RegisterBodyType, SendOtpBodyType } from './auth.model';
@@ -12,15 +11,17 @@ import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/c
 import { EmailService } from 'src/shared/services/email.service';
 import { TokenService } from 'src/shared/services/token.service';
 import { AccessTokenPayloadCreate } from 'src/shared/types/jwt.type';
-import { EmailAlreadyExistsException, EmailNotFoundException, FailedToSendOTPException, InvalidOTPException, InvalidPasswordException, InvalidTOTPAndCodeException, InvalidTOTPException, OTPExpiredException, RefreshTokenAlreadyUsedException, TOTPAlreadyEnabledException, TOTPNotEnabledException, UnauthorizedAccessException } from './auth.error';
+import { EmailAlreadyExistsException, EmailNotFoundException, FailedToSendOTPException, InvalidOTPException, InvalidTOTPAndCodeException, InvalidTOTPException, OTPExpiredException, RefreshTokenAlreadyUsedException, TOTPAlreadyEnabledException, TOTPNotEnabledException, UnauthorizedAccessException } from './auth.error';
 import { TwoFactorService } from 'src/shared/services/2fa.service';
-import { th } from 'zod/v4/locales';
+import { InvalidPasswordException } from 'src/shared/error';
+import { SharedRoleRepository } from 'src/shared/repositories/share-role.repo';
+
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly hashingService: HashingService,
-    private readonly rolesService: RolesService,
+    private readonly shareRolesService: SharedRoleRepository,
     private readonly authRepository: AuthRepository,
     private readonly sharedUserRepository: ShareUserRepository,
     private readonly emailService: EmailService,
@@ -57,7 +58,7 @@ export class AuthService {
         code: body.code,
         type: TypeOfVerificationCode.REGISTER,
       })
-      const clientRoleId = await this.rolesService.getClientRoleId()
+      const clientRoleId = await this.shareRolesService.getClientRoleId()
       const hashedPassword = await this.hashingService.hash(body.password)
       const [user] = await Promise.all([
         this.authRepository.createUser({
@@ -86,7 +87,7 @@ export class AuthService {
   async sendOTP(body: SendOtpBodyType) {
     // 1. Kiểm tra email đã tồn tại trong database chưa và hợp lệ với loại OTP
     const user = await this.sharedUserRepository.findUnique({
-      email: body.email,
+      email: body.email
     })
     //
     if (body.type === TypeOfVerificationCode.REGISTER && user) {
@@ -119,7 +120,7 @@ export class AuthService {
   async login(body: LoginBodyType & { userAgent: string; ip: string }) {
     // 1. Lấy thông tin user, kiểm tra user có tồn tại hay không, mật khẩu có đúng không
     const user = await this.authRepository.findUniqueUserInclueRole({
-      email: body.email,
+      email: body.email
     })
 
     if (!user) {
@@ -274,9 +275,9 @@ export class AuthService {
     //3. Cập nhật lại mật khẩu mới và xóa đi OTP
     const hashedPassword = await this.hashingService.hash(newPassword)
     await Promise.all([
-      this.authRepository.UpdateUser({ id: user.id }, { password: hashedPassword }),
+      this.sharedUserRepository.update({ id: user.id}, { password: hashedPassword, updatedById: user.id }),
       await Promise.all([
-        this.authRepository.UpdateUser(
+        this.sharedUserRepository.update(
           { id: user.id },
           {
             password: hashedPassword,
@@ -309,7 +310,7 @@ export class AuthService {
       const { secret, uri } = this.twoFactorService.generateTOTPSecret(user.email)
 
       // 3. Cập nhật secret vào user trong database
-      await this.authRepository.UpdateUser({ id: userId }, { totpSecret: secret })
+      await this.sharedUserRepository.update({ id: userId }, { totpSecret: secret, updatedById: userId })
       console.log('userId');
       // 4. Trả về secret và uri
 
@@ -321,7 +322,7 @@ export class AuthService {
   async disableTwoFactorAuth(data: DisableTwoFactorBodyType & { userId: number }) {
     // 1. Lấy thông tin user, kiểm tra xem user có tồn tại hay không, và xem họ đã bật 2FA chưa
     const { userId, totpCode, code } = data
-    const user = await this.sharedUserRepository.findUnique({ id: userId })
+    const user = await this.sharedUserRepository.findUnique({ id: userId})
     if (!user) {
       throw UnauthorizedAccessException
     }
@@ -348,7 +349,7 @@ export class AuthService {
     }
     
     // 4. Cập nhật secret thành null
-    await this.authRepository.UpdateUser({ id: userId }, { totpSecret: null })
+    await this.sharedUserRepository.update({ id: userId }, { totpSecret: null, updatedById: userId })
     // 5. Trả về thông báo
     return {
       message: 'Tắt 2FA thành công',

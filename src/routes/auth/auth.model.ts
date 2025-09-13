@@ -1,12 +1,6 @@
-import { ExternalExceptionFilter } from "@nestjs/core/exceptions/external-exception-filter";
-import e from "express";
-import { TypeOfVerificationCode, UserStatus } from "src/shared/constants/auth.constant";
+import { TypeOfVerificationCode } from "src/shared/constants/auth.constant";
 import { UserSchema } from "src/shared/models/shared-user.model";
 import { z, infer as zInfer } from "zod";
-
-
-
-
 
 export const RegisterBodySchema = UserSchema.pick({
   email: true,
@@ -187,7 +181,6 @@ export type RefreshTokenResType = LoginResType
 export type RefreshTokenType = zInfer<typeof RefreshTokenSchema>;
 export type LogoutBodyType = RefreshTokenBodyType
 export type GoogleAuthStateType = zInfer<typeof GoogleAuthStateSchema>;
-export type RoleType = zInfer<typeof RoleSchema>;
 export type GetAuthorizationUrlResType = zInfer<typeof GetAuthorizationUrlResSchema>;
 export type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>
 export type DisableTwoFactorBodyType = z.infer<typeof DisableTwoFactorBodySchema>

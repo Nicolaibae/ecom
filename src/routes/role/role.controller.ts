@@ -16,7 +16,6 @@ export class RoleController {
     @Get()
     @ZodResponse({type: GetRolesResDTO})
     list(@Query() query: GetRolesQueryDTO){
-        console.log('1')
         return this.roleService.list({
             page: query.page,
             limit: query.limit,

@@ -15,6 +15,7 @@ async function bootstrap() {
       deletedAt: null,
     },
   })
+  
   const availableRoutes: { path: string; method: keyof typeof HTTPMethod; name: string }[] = router.stack
     .map((layer) => {
       if (layer.route) {
@@ -35,6 +36,7 @@ async function bootstrap() {
     acc[`${item.method}-${item.path}`] = item
     return acc
   }, {})
+  
   // Tạo object availableRoutesMap với key là [method-path]
   const availableRoutesMap: Record<string, (typeof availableRoutes)[0]> = availableRoutes.reduce((acc, item) => {
     acc[`${item.method}-${item.path}`] = item

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "types": [
-      "react"
+      "react","multer"
     ],
     "module": "nodenext",
     "moduleResolution": "nodenext",

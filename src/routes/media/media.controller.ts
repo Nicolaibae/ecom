@@ -6,11 +6,14 @@ import { UPLOAD_DIR } from 'src/shared/constants/other.constant';
 import { IsPublic } from 'src/shared/decorators/auth.decorator';
 import { MediaService } from './media.service';
 import { ParseFilePipeWithUnlink } from './parse-file-pipe-with-unlink.pipe';
+import { ZodResponse } from 'nestjs-zod';
+import { PresignedUploadFileBodyDTO, PresignedUploadFileResDTO, UploadFilesResDTO } from './media.dto';
 
 @Controller('media')
 export class MediaController {
     constructor(private readonly mediaService: MediaService) { }
     @Post('images/upload')
+    @ZodResponse({type: UploadFilesResDTO})
     @UseInterceptors(
         FilesInterceptor('files', 100, {
             limits: {
@@ -47,8 +50,9 @@ export class MediaController {
     }
 
  @Post('images/upload/presigned-url')
+ @ZodResponse({type: PresignedUploadFileResDTO})
   @IsPublic()
-  async createPresignedUrl(@Body() body: { filename: string }) {
+  async createPresignedUrl(@Body() body: PresignedUploadFileBodyDTO) {
     return this.mediaService.getPresignUrl(body)
   }
 }

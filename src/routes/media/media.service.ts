@@ -30,7 +30,9 @@ export class MediaService {
         return unlink(file.path)
       }),
     )
-    return result
+    return {
+      data: result
+    }
     } catch (error) {
       throw error
     }

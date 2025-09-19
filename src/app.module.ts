@@ -19,6 +19,7 @@ import { MediaModule } from './routes/media/media.module';
 import { BrandModule } from './routes/brand/brand.module';
 import { BrandTranslationModule } from './routes/brand/brand-translation/brand-translation.module';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n'
+import { CategoryModule } from './routes/category/category.module';
 import path from 'path'
 
 @Module({
@@ -32,7 +33,7 @@ import path from 'path'
       resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver],
       typesOutputPath: path.resolve('src/generated/i18n.generated.ts'),
     }),
-    SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule, MediaModule, BrandModule, BrandTranslationModule
+    SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule, MediaModule, BrandModule, BrandTranslationModule, CategoryModule
   ],
   controllers: [AppController, LanguageController, PermissionController],
   providers: [

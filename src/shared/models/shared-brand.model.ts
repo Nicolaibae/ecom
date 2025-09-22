@@ -5,7 +5,7 @@ import { BrandTranslationSchema } from './shared-brand-translation.model'
 export const BrandSchema = z.object({
   id: z.number(),
   name: z.string().max(500),
-  logo: z.url().max(1000),
+  logo: z.string().max(1000),
 
   createdById: z.number().nullable(),
   updatedById: z.number().nullable(),

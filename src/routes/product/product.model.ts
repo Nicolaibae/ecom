@@ -26,8 +26,8 @@ function generateSKUs(variants: VariantsType) {
   }))
 }
 export const VariantSchema = z.object({
-  value: z.string(),
-  options: z.array(z.string()),
+  value: z.string().trim(),
+  options: z.array(z.string().trim()),
 })
 
 export const VariantsSchema = z.array(VariantSchema).superRefine((variants, ctx) => {
@@ -40,20 +40,26 @@ export const VariantsSchema = z.array(VariantSchema).superRefine((variants, ctx)
   // ]
   for (let i = 0; i < variants.length; i++) {
     const variant = variants[i]
-    const isDifferent = variants.findIndex((v) => v.value === variant.value) !== i
-    if (!isDifferent) {
+    console.log(variants[i])
+    
+    const isExistingVariant = variants.findIndex((v) => v.value.toLowerCase() === variant.value.toLowerCase())
+    if (isExistingVariant !== i) {
       return ctx.addIssue({
         code: 'custom',
         message: `Giá trị ${variant.value} đã tồn tại trong danh sách variants. Vui lòng kiểm tra lại.`,
         path: ['variants'],
       })
     }
-    const isDifferentOption = variant.options.findIndex((o) => variant.options.includes(o)) !== -1
+   
     //isDifferentOption xem cái nào trùng lặp không hàm findIndex false sẽ trả về -1
+    const isDifferentOption = variant.options.some((option, index) => {
+      const isExistingOption = variant.options.findIndex((o) => o.toLowerCase() === option.toLowerCase()) !== index
+      return isExistingOption
+    })
     if (isDifferentOption) {
       return ctx.addIssue({
         code: 'custom',
-        message: `Variant ${variant.options} chứa các option trùng tên với nhau. Vui lòng kiểm tra lại.`,
+        message: `Variant ${variant.value} chứa các option trùng tên với nhau. Vui lòng kiểm tra lại.`,
         path: ['variants'],
       })
     }
@@ -63,9 +69,9 @@ export const VariantsSchema = z.array(VariantSchema).superRefine((variants, ctx)
 export const ProductSchema = z.object({
   id: z.number(),
   publishedAt: z.coerce.date().nullable(),
-  name: z.string().max(500),
-  basePrice: z.number().positive(),
-  virtualPrice: z.number().positive(),
+  name: z.string().trim().max(500),
+  basePrice: z.number().min(0),
+  virtualPrice: z.number().min(0),
   brandId: z.number().positive(),
   images: z.array(z.string()),
   variants: VariantsSchema, // Json field represented as a record
@@ -119,7 +125,7 @@ export const GetProductDetailResSchema = ProductSchema.extend({
     basePrice: true,
     virtualPrice: true,
     brandId: true,
-    image: true,
+    images: true,
     variants: true,
   })
     .extend({

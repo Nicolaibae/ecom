@@ -4,6 +4,7 @@ import { HTTPMethod, RoleName } from 'src/shared/constants/role.constant'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 const prisma = new PrismaService()
+const SellerModule = ['AUTH', 'MEDIA', 'MANAGE-PRODUCT', 'PRODUCT-TRANSLATION', 'PROFILE']
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -15,13 +16,14 @@ async function bootstrap() {
       deletedAt: null,
     },
   })
-  
+
   const availableRoutes: { path: string; method: keyof typeof HTTPMethod; name: string }[] = router.stack
     .map((layer) => {
+
       if (layer.route) {
         const path = layer.route?.path
         const method = String(layer.route?.stack[0].method).toUpperCase() as keyof typeof HTTPMethod
-          const moduleName = String(path.split('/')[1]).toUpperCase()
+        const moduleName = String(path.split('/')[1]).toUpperCase()
         return {
           path,
           method,
@@ -31,12 +33,14 @@ async function bootstrap() {
       }
     })
     .filter((item) => item !== undefined)
+
+
   // Tạo object permissionInDbMap với key là [method-path]
   const permissionInDbMap: Record<string, (typeof permissionsInDb)[0]> = permissionsInDb.reduce((acc, item) => {
     acc[`${item.method}-${item.path}`] = item
     return acc
   }, {})
-  
+
   // Tạo object availableRoutesMap với key là [method-path]
   const availableRoutesMap: Record<string, (typeof availableRoutes)[0]> = availableRoutes.reduce((acc, item) => {
     acc[`${item.method}-${item.path}`] = item
@@ -81,24 +85,39 @@ async function bootstrap() {
       deletedAt: null,
     },
   })
+  const adminPermissionIds = updatedPermissionsInDb.map((item) => ({ id: item.id }))
+  const sellerPermissionIds = updatedPermissionsInDb
+  .filter(item => SellerModule.includes(item.module))
+  .map((item) => ({ id: item.id }))
+  console.log(updatedPermissionsInDb
+  .filter(item => SellerModule.includes(item.module)))
+  await Promise.all([
+    updateRole(adminPermissionIds, RoleName.Admin),
+    updateRole(sellerPermissionIds, RoleName.Seller)
+  ])
+
+
+
+
+  process.exit(0)
+}
+const updateRole = async (permissionRoleId: { id: number }[], roleName: string) => {
   // Cập nhật lại các permissions trong Admin Role
-  const adminRole = await prisma.role.findFirstOrThrow({
+  const role = await prisma.role.findFirstOrThrow({
     where: {
-      name: RoleName.Admin,
+      name: roleName,
       deletedAt: null,
     },
   })
   await prisma.role.update({
     where: {
-      id: adminRole.id,
+      id: role.id,
     },
     data: {
       permissions: {
-        set: updatedPermissionsInDb.map((item) => ({ id: item.id })),
+        set: permissionRoleId,
       },
     },
   })
-
-  process.exit(0)
 }
 bootstrap()

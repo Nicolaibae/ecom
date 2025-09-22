@@ -32,6 +32,12 @@ export const VariantSchema = z.object({
 
 export const VariantsSchema = z.array(VariantSchema).superRefine((variants, ctx) => {
   // Kiểm tra variants và variant option có bị trùng hay không
+  //vd : variants: [
+  //     {
+  //       value: 'Màu sắc',
+  //       options: ['Đen', 'Trắng', 'Xanh', 'Đỏ']
+  //     },
+  // ]
   for (let i = 0; i < variants.length; i++) {
     const variant = variants[i]
     const isDifferent = variants.findIndex((v) => v.value === variant.value) !== i
@@ -47,7 +53,7 @@ export const VariantsSchema = z.array(VariantSchema).superRefine((variants, ctx)
     if (isDifferentOption) {
       return ctx.addIssue({
         code: 'custom',
-        message: `Variant ${variant.value} chứa các option trùng tên với nhau. Vui lòng kiểm tra lại.`,
+        message: `Variant ${variant.options} chứa các option trùng tên với nhau. Vui lòng kiểm tra lại.`,
         path: ['variants'],
       })
     }
@@ -107,48 +113,48 @@ export const GetProductDetailResSchema = ProductSchema.extend({
   brand: BrandIncludeTranslationSchema,
 })
 
-export const CreateProductBodySchema = ProductSchema.pick({
-  publishedAt: true,
-  name: true,
-  basePrice: true,
-  virtualPrice: true,
-  brandId: true,
-  images: true,
-  variants: true,
-})
-  .extend({
-    categories: z.array(z.coerce.number().int().positive()),
-    skus: z.array(UpsertSKUBodySchema),
+  export const CreateProductBodySchema = ProductSchema.pick({
+    publishedAt: true,
+    name: true,
+    basePrice: true,
+    virtualPrice: true,
+    brandId: true,
+    image: true,
+    variants: true,
   })
-  .strict()
-  .superRefine(({ variants, skus }, ctx) => {
-    // Kiểm tra xem số lượng SKU có hợp lệ hay không
-    const skuValueArray = generateSKUs(variants)
-    if (skus.length !== skuValueArray.length) {
-      return ctx.addIssue({
-        code: 'custom',
-        path: ['skus'],
-        message: `Số lượng SKU nên là ${skuValueArray.length}. Vui lòng kiểm tra lại.`,
-      })
-    }
-
-    // Kiểm tra từng SKU có hợp lệ hay không
-    let wrongSKUIndex = -1
-    const isValidSKUs = skus.every((sku, index) => {
-      const isValid = sku.value === skuValueArray[index].value
-      if (!isValid) {
-        wrongSKUIndex = index
-      }
-      return isValid
+    .extend({
+      categories: z.array(z.coerce.number().int().positive()),
+      skus: z.array(UpsertSKUBodySchema),
     })
-    if (!isValidSKUs) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['skus'],
-        message: `Giá trị SKU index ${wrongSKUIndex} không hợp lệ. Vui lòng kiểm tra lại.`,
+    .strict()
+    .superRefine(({ variants, skus }, ctx) => {
+      // Kiểm tra xem số lượng SKU có hợp lệ hay không
+      const skuValueArray = generateSKUs(variants)
+      if (skus.length !== skuValueArray.length) {
+        return ctx.addIssue({
+          code: 'custom',
+          path: ['skus'],
+          message: `Số lượng SKU nên là ${skuValueArray.length}. Vui lòng kiểm tra lại.`,
+        })
+      }
+
+      // Kiểm tra từng SKU có hợp lệ hay không
+      let wrongSKUIndex = -1
+      const isValidSKUs = skus.every((sku, index) => {
+        const isValid = sku.value === skuValueArray[index].value
+        if (!isValid) {
+          wrongSKUIndex = index
+        }
+        return isValid
       })
-    }
-  })
+      if (!isValidSKUs) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['skus'],
+          message: `Giá trị SKU index ${wrongSKUIndex} không hợp lệ. Vui lòng kiểm tra lại.`,
+        })
+      }
+    })
 
 export const UpdateProductBodySchema = CreateProductBodySchema
 

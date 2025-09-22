@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "add-brand":"ts-node initialScript/add-brands.ts",
     "test-scripts": "ts-node initialScript/test-script.ts",
     "create-permissions": "ts-node initialScript/create-permissions.ts",
     "email:dev": "email dev",

@@ -20,7 +20,7 @@ export const UpsertSKUBodySchema = SKUSchema.pick({
     value: true,
     price: true,
     stock: true,
-    images: true,
+    image: true,
 })
 
 export type SKUSchemaType = z.infer<typeof SKUSchema>

@@ -101,7 +101,12 @@ export const GetProductsQuerySchema = z.object({
  * Dành cho Admin và Seller
  */
 export const GetManageProductsQuerySchema = GetProductsQuerySchema.extend({
-  isPublic: z.coerce.boolean().optional(), // có thể xem được cac sản phẩm chưa công bố
+ isPublic: z.preprocess((val) => {
+  if (val === 'true') return true;
+  if (val === 'false') return false;
+  if (val === undefined) return undefined;
+  return val; // sẽ bị fail trong z.boolean() nếu là giá trị rác
+}, z.boolean().optional()), // có thể xem được cac sản phẩm chưa công bố và công bố
   createdById: z.coerce.number().int().positive(),
 })
 

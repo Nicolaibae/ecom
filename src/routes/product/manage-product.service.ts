@@ -42,6 +42,7 @@ export class ManageProductService {
             page: props.query.page,
             languageId: I18nContext.current()?.lang as string,
             createdById: props.query.createdById,
+            isPublic: props.query.isPublic,
         })
         return data
     }

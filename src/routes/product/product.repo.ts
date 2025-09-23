@@ -179,17 +179,11 @@ export class ProductRepo {
         isHard?: boolean,
     ): Promise<ProductType> {
         if (isHard) {
-            const [product] = await Promise.all([
-                await this.prismaService.product.delete({
-                    where: {
-                        id
-                    }
-                }),
-                await this.prismaService.sKU.deleteMany({
-                    where: { id }
-                })
-            ])
-            return product
+            return this.prismaService.product.delete({
+                where: {
+                    id,
+                },
+            })
         }
         const now = new Date()
         const [product] = await Promise.all([
@@ -202,6 +196,16 @@ export class ProductRepo {
                     deletedAt: now,
                     deletedById
                 }
+            }),
+            this.prismaService.productTranslation.updateMany({
+                where: {
+                    productId: id,
+                    deletedAt: null,
+                },
+                data: {
+                    deletedAt: now,
+                    deletedById,
+                },
             }),
             await this.prismaService.sKU.updateMany({
                 where: {

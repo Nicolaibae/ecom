@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { CreateProductBodyType, GetProductDetailResType, GetProductsQueryType, GetProductsResType, ProductType, UpdateProductBodyType } from 'src/routes/product/product.model'
-import { ALL_LANGUAGE_CODE } from 'src/shared/constants/other.constant'
+import { ALL_LANGUAGE_CODE, OrderByType, SortBy, SortByType } from 'src/shared/constants/other.constant'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
 @Injectable()
@@ -19,6 +19,8 @@ export class ProductRepo {
         createdById,
         isPublic,
         languageId,
+        orderBy,
+        sortBy,
     }: {
         limit: number
         page: number
@@ -30,6 +32,8 @@ export class ProductRepo {
         createdById?: number
         isPublic?: boolean
         languageId: string
+        orderBy: OrderByType
+        sortBy: SortByType
     }): Promise<GetProductsResType> {
         const skip = (page - 1) * limit
         const take = limit
@@ -37,6 +41,7 @@ export class ProductRepo {
             deletedAt: null,
             createdById: createdById ? createdById : undefined,
         }
+
         if (isPublic === true) {
             where.publishedAt = {
                 lte: new Date(),
@@ -48,6 +53,49 @@ export class ProductRepo {
                 OR: [{ publishedAt: null }, { publishedAt: { gt: new Date() } }],
             }
         }
+        if (name) {
+            where.name = {
+                contains: name,
+                mode: 'insensitive',
+            }
+        }
+        if (brandIds && brandIds.length > 0) {
+            where.brandId = {
+                in: brandIds,
+            }
+        }
+        if (categories && categories.length > 0) {
+            where.categories = {
+                some: {
+                    id: {
+                        in: categories,
+                    },
+                },
+            }
+        }
+        if (minPrice !== undefined || maxPrice !== undefined) {
+            where.basePrice = {
+                gte: minPrice,
+                lte: maxPrice,
+            }
+        }
+        // Mặc định sort theo createdAt mới nhất
+        let caculatedOrderBy : Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] = {
+            createdAt: orderBy
+        }
+        if(sortBy === SortBy.Price) {
+            caculatedOrderBy = {
+                basePrice: orderBy
+            }
+        } else if(sortBy === SortBy.Sale) {
+            caculatedOrderBy = {
+                orders:{
+                _count: orderBy
+                
+            }
+            }
+          
+            }
         const [totalItems, data] = await Promise.all([
             this.prismaService.product.count({
                 where,
@@ -58,10 +106,14 @@ export class ProductRepo {
                     productTranslations: {
                         where: languageId === ALL_LANGUAGE_CODE ? { deletedAt: null } : { languageId, deletedAt: null },
                     },
+                    orders:{
+                        where:{
+                            deletedAt:null,
+                            status: "DELIVERED"
+                        }
+                    }
                 },
-                orderBy: {
-                    createdAt: 'desc',
-                },
+                orderBy: caculatedOrderBy,
                 skip,
                 take,
             }),
@@ -91,21 +143,21 @@ export class ProductRepo {
         languageId: string
         isPublic?: boolean
     }): Promise<GetProductDetailResType | null> {
-          let where: Prisma.ProductWhereUniqueInput = {
-        id: productId,
-        deletedAt: null,
-      }
-      if (isPublic === true) {
-        where.publishedAt = {
-          lte: new Date(),
-          not: null,
+        let where: Prisma.ProductWhereUniqueInput = {
+            id: productId,
+            deletedAt: null,
         }
-      } else if (isPublic === false) {
-        where = {
-          ...where,
-          OR: [{ publishedAt: null }, { publishedAt: { gt: new Date() } }],
+        if (isPublic === true) {
+            where.publishedAt = {
+                lte: new Date(),
+                not: null,
+            }
+        } else if (isPublic === false) {
+            where = {
+                ...where,
+                OR: [{ publishedAt: null }, { publishedAt: { gt: new Date() } }],
+            }
         }
-      }
         return this.prismaService.product.findUnique({
             where: {
                 id: productId,

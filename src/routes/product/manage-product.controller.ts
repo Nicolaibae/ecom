@@ -2,13 +2,13 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ZodResponse, ZodSerializerDto } from 'nestjs-zod'
 import {
-    CreateProductBodyDTO,
-    GetManageProductsQueryDTO,
-    GetProductDetailResDTO,
-    GetProductParamsDTO,
-    GetProductsResDTO,
-    ProductDTO,
-    UpdateProductBodyDTO,
+  CreateProductBodyDTO,
+  GetManageProductsQueryDTO,
+  GetProductDetailResDTO,
+  GetProductParamsDTO,
+  GetProductsResDTO,
+  ProductDTO,
+  UpdateProductBodyDTO,
 } from 'src/routes/product/product.dto'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
 import { MessageResDTO } from 'src/shared/dtos/reponse.dto'
@@ -18,20 +18,20 @@ import type { AccessTokenPayload } from 'src/shared/types/jwt.type'
 
 @Controller('manage-product/products')
 export class ManageProductController {
-    constructor(private readonly manageProductService: ManageProductService) { }
+  constructor(private readonly manageProductService: ManageProductService) { }
 
-    @Get()
-    @ZodResponse({type:GetProductsResDTO})
-    list(@Query() query: GetManageProductsQueryDTO, @ActiveUser() user: AccessTokenPayload) {
-        return this.manageProductService.list({
-            query,
-            userIdRequest: user.userId,
-            roleNameRequest: user.roleName,
-        })
-    }
+  @Get()
+  @ZodResponse({ type: GetProductsResDTO })
+  list(@Query() query: GetManageProductsQueryDTO, @ActiveUser() user: AccessTokenPayload) {
+    return this.manageProductService.list({
+      query,
+      userIdRequest: user.userId,
+      roleNameRequest: user.roleName,
+    })
+  }
 
-     @Get(':productId')
-  @ZodResponse({type:GetProductDetailResDTO})
+  @Get(':productId')
+  @ZodResponse({ type: GetProductDetailResDTO })
   findById(@Param() params: GetProductParamsDTO, @ActiveUser() user: AccessTokenPayload) {
     return this.manageProductService.getDetail({
       productId: params.productId,
@@ -41,7 +41,7 @@ export class ManageProductController {
   }
 
   @Post()
-  @ZodResponse({type:GetProductDetailResDTO})
+  @ZodResponse({ type: GetProductDetailResDTO })
   create(@Body() body: CreateProductBodyDTO, @ActiveUser('userId') userId: number) {
     return this.manageProductService.create({
       data: body,
@@ -50,7 +50,7 @@ export class ManageProductController {
   }
 
   @Put(':productId')
-  @ZodResponse({type:ProductDTO})
+  @ZodResponse({ type: ProductDTO })
   update(
     @Body() body: UpdateProductBodyDTO,
     @Param() params: GetProductParamsDTO,
@@ -65,7 +65,7 @@ export class ManageProductController {
   }
 
   @Delete(':productId')
-  @ZodResponse({type:MessageResDTO})
+  @ZodResponse({ type: MessageResDTO })
   delete(@Param() params: GetProductParamsDTO, @ActiveUser() user: AccessTokenPayload) {
     return this.manageProductService.delete({
       productId: params.productId,

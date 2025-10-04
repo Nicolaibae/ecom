@@ -4,7 +4,6 @@ import { ZodError } from 'zod'
 
 
 const CustomZodValidationPipe: any = createZodValidationPipe({
-  // provide custom validation exception factory
   createValidationException: (error: ZodError) =>{
     console.error('Zod validation error:', error.issues);
     

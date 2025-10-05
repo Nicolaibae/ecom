@@ -212,6 +212,7 @@ export class ProductRepo {
         },
         skus: {
           createMany: {
+            
             data: skus.map((sku) => ({
               ...sku,
               createdById,

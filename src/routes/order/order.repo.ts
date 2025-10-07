@@ -16,6 +16,7 @@ import {
   GetOrderListQueryType,
   GetOrderListResType,
 } from 'src/routes/order/order.model'
+import { PaymentStatus } from 'src/shared/constants/payment.constant'
 import { isNotFoundPrismaError } from 'src/shared/helper'
 
 import { PrismaService } from 'src/shared/services/prisma.service'
@@ -117,8 +118,6 @@ export class OrderRepo {
     const isValidShop = body.every((item) => {
       const bodyCartItemIds = item.cartItemIds
       return bodyCartItemIds.every((cartItemId) => {
-        // Neu đã đến bước này thì cartItem luôn luôn có giá trị
-        // Vì chúng ta đã so sánh với allBodyCartItems.length ở trên rồi
         const cartItem = cartItemMap.get(cartItemId)!
         return item.shopId === cartItem.sku.createdById
       })
@@ -129,7 +128,12 @@ export class OrderRepo {
 
     // 5. Tạo order và xóa cartItem trong transaction để đảm bảo tính toàn vẹn dữ liệu
     const orders = await this.prismaService.$transaction(async (tx) => {
-      const orders = await Promise.all(
+      const payment = await tx.payment.create({
+        data: {
+          status: PaymentStatus.PENDING,
+        },
+      })
+      const orders$ = Promise.all(
         body.map((item) =>
           tx.order.create({
             data: {
@@ -138,6 +142,7 @@ export class OrderRepo {
               receiver: item.receiver,
               createdById: userId,
               shopId: item.shopId,
+              paymentId: payment.id,
               items: {
                 create: item.cartItemIds.map((cartItemId) => {
                   const cartItem = cartItemMap.get(cartItemId)!
@@ -172,13 +177,28 @@ export class OrderRepo {
           }),
         ),
       )
-      await tx.cartItem.deleteMany({
+      const cartItem$ = tx.cartItem.deleteMany({
         where: {
           id: {
             in: allBodyCartItemIds,
           },
         },
       })
+      const sku$ = Promise.all( // giảm số lượng stock sau khi order
+        cartItems.map((item) =>
+          tx.sKU.update({
+            where: {
+              id: item.sku.id,
+            },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          }),
+        ),
+      )
+      const [orders] = await Promise.all([orders$, cartItem$, sku$])
       return orders
     })
     return {

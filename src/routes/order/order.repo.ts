@@ -16,17 +16,18 @@ import {
   GetOrderListQueryType,
   GetOrderListResType,
 } from 'src/routes/order/order.model'
+import { OrderProducer } from 'src/routes/order/order.producer'
 import { PaymentStatus } from 'src/shared/constants/payment.constant'
+import { SerializeAll } from 'src/shared/decorators/serialize.decorator'
 import { isNotFoundPrismaError } from 'src/shared/helper'
-
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { OrderProducer } from './order.producer'
 
 @Injectable()
+@SerializeAll()
 export class OrderRepo {
   constructor(
     private readonly prismaService: PrismaService,
-     private readonly orderProducer: OrderProducer
+    private orderProducer: OrderProducer,
   ) {}
   async list(userId: number, query: GetOrderListQueryType): Promise<GetOrderListResType> {
     const { page, limit, status } = query
@@ -69,7 +70,7 @@ export class OrderRepo {
   ): Promise<{
     paymentId: number
     orders: CreateOrderResType['data']
-  }>  {
+  }> {
     // 1. Kiểm tra xem tất cả cartItemIds có tồn tại trong cơ sở dữ liệu hay không
     // 2. Kiểm tra số lượng mua có lớn hơn số lượng tồn kho hay không
     // 3. Kiểm tra xem tất cả sản phẩm mua có sản phẩm nào bị xóa hay ẩn không
@@ -128,6 +129,8 @@ export class OrderRepo {
     const isValidShop = body.every((item) => {
       const bodyCartItemIds = item.cartItemIds
       return bodyCartItemIds.every((cartItemId) => {
+        // Neu đã đến bước này thì cartItem luôn luôn có giá trị
+        // Vì chúng ta đã so sánh với allBodyCartItems.length ở trên rồi
         const cartItem = cartItemMap.get(cartItemId)!
         return item.shopId === cartItem.sku.createdById
       })
@@ -137,7 +140,7 @@ export class OrderRepo {
     }
 
     // 5. Tạo order và xóa cartItem trong transaction để đảm bảo tính toàn vẹn dữ liệu
-    const [paymentId, orders]  = await this.prismaService.$transaction(async (tx) => {
+    const [paymentId, orders] = await this.prismaService.$transaction(async (tx) => {
       const payment = await tx.payment.create({
         data: {
           status: PaymentStatus.PENDING,
@@ -194,7 +197,7 @@ export class OrderRepo {
           },
         },
       })
-      const sku$ = Promise.all( // giảm số lượng stock sau khi order
+      const sku$ = Promise.all(
         cartItems.map((item) =>
           tx.sKU.update({
             where: {
@@ -208,14 +211,14 @@ export class OrderRepo {
           }),
         ),
       )
-    const addCancelPaymentJob$ =  await this.orderProducer.addCancelPaymentJob(payment.id)
+      const addCancelPaymentJob$ = this.orderProducer.addCancelPaymentJob(payment.id)
       const [orders] = await Promise.all([orders$, cartItem$, sku$, addCancelPaymentJob$])
       return [payment.id, orders]
     })
     return {
-     paymentId,
+      paymentId,
       orders,
-    }
+    } 
   }
 
   async detail(userId: number, orderid: number): Promise<GetOrderDetailResType> {

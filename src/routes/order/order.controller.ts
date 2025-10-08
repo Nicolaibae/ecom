@@ -15,8 +15,9 @@ export class OrderController {
   }
   @Post()
   @ZodResponse({ type: CreateOrderResDTO })
-  create(@ActiveUser('userId') userId: number, @Body() body: CreateOrderBodyDTO) {
-    return this.orderService.create(userId, body)
+ async create(@ActiveUser('userId') userId: number, @Body() body: CreateOrderBodyDTO) {
+    const result = await this.orderService.create(userId, body)
+    return { data: result.orders}
   }
 
   @Get(':orderId')

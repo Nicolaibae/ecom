@@ -4,6 +4,7 @@ import { PaymentService } from './payment.service';
 import { PaymentRepo } from './payment.repo';
 import { BullModule } from '@nestjs/bullmq';
 import { PAYMENT_QUEUE_NAME } from 'src/shared/constants/queue.constant';
+import { PaymentProducer } from './payment.producer';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { PAYMENT_QUEUE_NAME } from 'src/shared/constants/queue.constant';
     }),
   ],
   controllers: [PaymentController],
-  providers: [PaymentService,PaymentRepo]
+  providers: [PaymentService,PaymentRepo,PaymentProducer]
 })
 export class PaymentModule {}

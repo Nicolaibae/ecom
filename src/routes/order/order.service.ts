@@ -6,7 +6,7 @@ import { OrderProducer } from './order.producer'
 @Injectable()
 export class OrderService {
   constructor(private readonly orderRepo: OrderRepo,
-      private orderProducer: OrderProducer,
+    private orderProducer: OrderProducer,
   ) { }
 
   async list(userId: number, query: GetOrderListQueryType) {

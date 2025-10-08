@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 
 import { VariantsType } from 'src/shared/models/shared-product.model'
-import { ProductTranslationType } from './routes/product/product-translation/product-translation.model'
+import { ProductTranslationType } from './shared/models/shared-product-translation.model'
+
 
 declare global {
   namespace PrismaJson {

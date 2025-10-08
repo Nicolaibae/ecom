@@ -24,19 +24,29 @@ import { ProductModule } from './routes/product/product.module';
 import { CartModule } from './routes/cart/cart.module';
 import { OrderModule } from './routes/order/order.module';
 import { PaymentModule } from './routes/payment/payment.module';
+import { BullModule } from '@nestjs/bullmq';
 import path from 'path'
 
 @Module({
   imports: [
+    BullModule.forRoot({
+      connection: {
+        host: 'redis-10977.crce185.ap-seast-1-1.ec2.redns.redis-cloud.com',
+        port: 10977,
+        username: 'default',
+        password: 'lS3iBYKqLQBHK4I5YgiUcgL1teQoRfGP'
+      },
+    }),
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-       path: path.resolve('src/i18n/'),
+        path: path.resolve('src/i18n/'),
         watch: true,
       },
       resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver],
       typesOutputPath: path.resolve('src/generated/i18n.generated.ts'),
     }),
+
     SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule, MediaModule, BrandModule, BrandTranslationModule, CategoryModule, ProductModule, CartModule, OrderModule, PaymentModule
   ],
   controllers: [AppController, LanguageController, PermissionController],

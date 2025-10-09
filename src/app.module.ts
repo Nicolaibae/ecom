@@ -25,6 +25,7 @@ import { CartModule } from './routes/cart/cart.module';
 import { OrderModule } from './routes/order/order.module';
 import { PaymentModule } from './routes/payment/payment.module';
 import { BullModule } from '@nestjs/bullmq';
+import { WebsocketsModule } from './websockets/websockets.module';
 import path from 'path'
 import envConfig from './shared/config';
 
@@ -45,7 +46,7 @@ import envConfig from './shared/config';
       typesOutputPath: path.resolve('src/generated/i18n.generated.ts'),
     }),
 
-    SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule, MediaModule, BrandModule, BrandTranslationModule, CategoryModule, ProductModule, CartModule, OrderModule, PaymentModule
+    SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule, MediaModule, BrandModule, BrandTranslationModule, CategoryModule, ProductModule, CartModule, OrderModule, PaymentModule, WebsocketsModule
   ],
   controllers: [AppController, LanguageController, PermissionController],
   providers: [

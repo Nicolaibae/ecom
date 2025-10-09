@@ -10,17 +10,19 @@ import { ShareUserRepository } from './repositories/share-user.repo';
 import { EmailService } from './services/email.service';
 import { TwoFactorService } from './services/2fa.service';
 import { S3Service } from './services/s3.service';
-import { PaymentAPIKeyGuard } from './guards/api-key.guard';
+
 import { SharedPaymentRepository } from './repositories/share-payment.repo';
+import { SharedWebsocketRepository } from './repositories/share-websocket.repo';
+import { PaymentAPIKeyGuard } from './guards/payment-api-key.guard';
 
 @Global()
 @Module({
-    providers: [PrismaService, HashingService, TokenService, AccessTokenGuard, PaymentAPIKeyGuard, ShareUserRepository,EmailService,TwoFactorService,S3Service,SharedPaymentRepository,
+    providers: [PrismaService, HashingService, TokenService, AccessTokenGuard, PaymentAPIKeyGuard, ShareUserRepository,EmailService,TwoFactorService,S3Service,SharedPaymentRepository,SharedWebsocketRepository,
         {
             provide: APP_GUARD,
             useClass: AuthenticationGuard
         }],
-    exports: [PrismaService, AccessTokenGuard, PaymentAPIKeyGuard, HashingService, TokenService,ShareUserRepository,EmailService,TwoFactorService,SharedPaymentRepository],
+    exports: [PrismaService, AccessTokenGuard, PaymentAPIKeyGuard, HashingService, TokenService,ShareUserRepository,EmailService,TwoFactorService,SharedPaymentRepository,SharedWebsocketRepository],
     imports: [JwtModule],
 })
 export class SharedModule { }

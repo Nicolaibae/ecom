@@ -1,19 +1,36 @@
 import { INestApplicationContext } from '@nestjs/common'
 import { IoAdapter } from '@nestjs/platform-socket.io'
 import { ServerOptions, Server, Socket } from 'socket.io'
+import { generateRoomUserId } from 'src/shared/helper'
 import { SharedWebsocketRepository } from 'src/shared/repositories/share-websocket.repo'
+import { createAdapter } from '@socket.io/redis-adapter';
+import { createClient } from 'redis';
 
 import { TokenService } from 'src/shared/services/token.service'
+import envConfig from 'src/shared/config'
 
 const namespaces = ['/', 'payment', 'chat']
 export class WebsocketAdapter extends IoAdapter {
   private readonly sharedWebsocketRepository: SharedWebsocketRepository
   private readonly tokenService: TokenService
+   private adapterConstructor: ReturnType<typeof createAdapter>
   constructor(app: INestApplicationContext) {
+
     super(app)
     this.sharedWebsocketRepository = app.get(SharedWebsocketRepository)
     this.tokenService = app.get(TokenService)
   }
+  async connectToRedis(): Promise<void> {
+    const pubClient = createClient({ url:envConfig.url_Redis });
+    const subClient = pubClient.duplicate();
+
+    await Promise.all([pubClient.connect(), subClient.connect()]);
+
+    this.adapterConstructor = createAdapter(pubClient, subClient);
+  }
+
+
+
   createIOServer(port: number, options?: ServerOptions) {
     const server: Server = super.createIOServer(port, {
       ...options,
@@ -54,13 +71,14 @@ export class WebsocketAdapter extends IoAdapter {
     }
     try {
       const { userId } = await this.tokenService.verifyAccessToken(accessToken)
-      await this.sharedWebsocketRepository.create({
-        id: socket.id,
-        userId,
-      })
-      socket.on('disconnect', async () => {
-        await this.sharedWebsocketRepository.delete(socket.id).catch(() => {})
-      })
+        await socket.join(generateRoomUserId(userId))
+         // await this.sharedWebsocketRepository.create({
+      //   id: socket.id,
+      //   userId,
+      // })
+      // socket.on('disconnect', async () => {
+      //   await this.sharedWebsocketRepository.delete(socket.id).catch(() => {})
+      // })
       next()
     } catch (error) {
       next(error)

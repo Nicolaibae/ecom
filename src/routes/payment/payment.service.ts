@@ -5,6 +5,7 @@ import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 import { Server } from 'socket.io'
 import { SharedWebsocketRepository } from 'src/shared/repositories/share-websocket.repo'
 import { tryCatch } from 'bullmq'
+import { generateRoomUserId } from 'src/shared/helper'
 
 
 
@@ -20,17 +21,20 @@ export class PaymentService {
 
    async receiver(body: WebhookPaymentBodyType) {
     const userId = await this.paymentRepo.receiver(body)
+     this.server.to(generateRoomUserId(userId)).emit('payment', {
+      status: 'success',
+    })
    
-    try {
-      const websocket =  await this.sharedWebsocketRepository.findMany(userId)
-      websocket.forEach((ws)=>{
-        this.server.to(ws.id).emit('payment', {
-          status: 'success',
-        })
-      })
-    } catch (error) {
-       console.log(error)
-    }
+    // try {
+    //   const websocket =  await this.sharedWebsocketRepository.findMany(userId)
+    //   websocket.forEach((ws)=>{
+    //     this.server.to(ws.id).emit('payment', {
+    //       status: 'success',
+    //     })
+    //   })
+    // } catch (error) {
+    //    console.log(error)
+    // }
      return {
       message: 'Payment received successfully',
     }

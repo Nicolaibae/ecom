@@ -1,7 +1,8 @@
 import { InjectQueue } from '@nestjs/bullmq'
 import { Injectable } from '@nestjs/common'
 import { Queue } from 'bullmq'
-import { CANCEL_PAYMENT_JOB_NAME, generateCancelPaymentJobId, PAYMENT_QUEUE_NAME } from 'src/shared/constants/queue.constant'
+import { CANCEL_PAYMENT_JOB_NAME, PAYMENT_QUEUE_NAME } from 'src/shared/constants/queue.constant'
+import { generateCancelPaymentJobId } from 'src/shared/helper'
 
 
 @Injectable()

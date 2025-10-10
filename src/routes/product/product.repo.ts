@@ -14,7 +14,7 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 export class ProductRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async list({
+ async list({
     limit,
     page,
     name,
@@ -127,7 +127,7 @@ export class ProductRepo {
       page: page,
       limit: limit,
       totalPages: Math.ceil(totalItems / limit),
-    }
+    } as any
   }
 
   findById(productId: number): Promise<ProductType | null> {
@@ -212,7 +212,6 @@ export class ProductRepo {
         },
         skus: {
           createMany: {
-            
             data: skus.map((sku) => ({
               ...sku,
               createdById,
@@ -245,7 +244,7 @@ export class ProductRepo {
           },
         },
       },
-    }) as any
+    })
   }
 
   async update({

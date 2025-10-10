@@ -24,7 +24,7 @@ export const RegisterBodySchema = UserSchema.pick({
 
 export const RegisterResSchema = UserSchema.omit({
   password: true,
-  toptSecret: true,
+  totpSecret: true,
 })
 
 

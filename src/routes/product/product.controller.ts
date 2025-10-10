@@ -1,19 +1,15 @@
 
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
-import { ZodResponse, ZodSerializerDto } from 'nestjs-zod'
+import { Controller, Get, Param, Query } from '@nestjs/common'
+import { ZodResponse } from 'nestjs-zod'
 import {
-    CreateProductBodyDTO,
     GetProductDetailResDTO,
     GetProductParamsDTO,
     GetProductsQueryDTO,
     GetProductsResDTO,
-    ProductDTO,
-    UpdateProductBodyDTO,
 } from 'src/routes/product/product.dto'
 import { ProductService } from 'src/routes/product/product.service'
-import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
 import { IsPublic } from 'src/shared/decorators/auth.decorator'
-import { MessageResDTO } from 'src/shared/dtos/reponse.dto'
+
 
 
 @Controller('products')

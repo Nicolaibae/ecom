@@ -61,7 +61,7 @@ export class OrderRepo {
       limit,
       totalItems,
       totalPages: Math.ceil(totalItems / limit),
-    }
+    } as any
   }
 
   async create(
@@ -218,7 +218,7 @@ export class OrderRepo {
     return {
       paymentId,
       orders,
-    } 
+    } as any
   }
 
   async detail(userId: number, orderid: number): Promise<GetOrderDetailResType> {
@@ -235,7 +235,7 @@ export class OrderRepo {
     if (!order) {
       throw OrderNotFoundException
     }
-    return order
+    return order as any
   }
 
   async cancel(userId: number, orderId: number): Promise<CancelOrderResType> {
@@ -261,7 +261,7 @@ export class OrderRepo {
           updatedById: userId,
         },
       })
-      return updatedOrder
+      return updatedOrder as any
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw OrderNotFoundException

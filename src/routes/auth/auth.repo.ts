@@ -50,7 +50,7 @@ export class AuthRepository {
                 code: payload.code,
                 expiredAt: payload.expiredAt,
             }
-        });
+        }) as any
     }
     async findVerificationCode(
         uniqueValue:
@@ -107,12 +107,12 @@ export class AuthRepository {
                 id: deviceId
             },
             data
-        })
+        }) as any
     }
     DeleteRefreshToken(payloadToken: { token: string }): Promise<RefreshTokenType> {
         return this.prismaService.refreshToken.delete({
             where: payloadToken
-        })
+        }) as any
     }
 
     DeleteVerificationCode(

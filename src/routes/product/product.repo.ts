@@ -136,7 +136,7 @@ export class ProductRepo {
         id: productId,
         deletedAt: null,
       },
-    })
+    }) as any
   }
 
   getDetail({
@@ -192,7 +192,7 @@ export class ProductRepo {
           },
         },
       },
-    })
+    }) as any
   }
 
   create({
@@ -244,7 +244,7 @@ export class ProductRepo {
           },
         },
       },
-    })
+    }) as any
   }
 
   async update({
@@ -344,7 +344,7 @@ export class ProductRepo {
       }),
     ])
 
-    return product
+    return product as any
   }
 
   async delete(
@@ -362,7 +362,7 @@ export class ProductRepo {
         where: {
           id,
         },
-      })
+      }) as any
     }
     const now = new Date()
     const [product] = await Promise.all([
@@ -397,6 +397,6 @@ export class ProductRepo {
         },
       }),
     ])
-    return product
+    return product as any
   }
 }

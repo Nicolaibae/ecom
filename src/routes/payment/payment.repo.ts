@@ -8,8 +8,10 @@ import { OrderIncludeProductSKUSnapshotType } from "src/shared/models/shared-ord
 import { PaymentStatus } from "src/shared/constants/payment.constant";
 import { OrderStatus } from "src/shared/constants/order.constant";
 import { PaymentProducer } from "./payment.producer";
+import { SerializeAll } from "src/shared/decorators/serialize.decorator";
 
 @Injectable()
+@SerializeAll()
 export class PaymentRepo {
     constructor(
         private readonly prismaService: PrismaService,
@@ -85,7 +87,7 @@ export class PaymentRepo {
             }
 
             const { orders } = payment
-            const totalPrice = this.totalPriceOrder(orders)
+            const totalPrice = this.totalPriceOrder(orders as any)
             if (totalPrice !== body.transferAmount) {
                 throw new BadRequestException(`Price not match, expected ${totalPrice} but got ${body.transferAmount}`)
             }

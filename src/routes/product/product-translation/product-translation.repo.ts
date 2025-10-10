@@ -17,7 +17,7 @@ export class ProductTranslationRepo {
         id,
         deletedAt: null,
       },
-    })
+    }) as any
   }
 
   create({
@@ -32,7 +32,7 @@ export class ProductTranslationRepo {
         ...data,
         createdById,
       },
-    })
+    }) as any
   }
 
   async update({
@@ -53,7 +53,7 @@ export class ProductTranslationRepo {
         ...data,
         updatedById,
       },
-    })
+    }) as any
   }
 
   delete(
@@ -66,7 +66,8 @@ export class ProductTranslationRepo {
     },
     isHard?: boolean,
   ): Promise<ProductTranslationType> {
-    return isHard
+    return(
+       isHard
       ? this.prismaService.productTranslation.delete({
           where: {
             id,
@@ -82,5 +83,6 @@ export class ProductTranslationRepo {
             deletedById,
           },
         })
+    ) as any
   }
 }

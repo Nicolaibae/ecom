@@ -46,7 +46,7 @@ export class AuthService {
     if (!vevificationCode) {
       throw InvalidOTPException
     }
-    if (vevificationCode.expiredAt < new Date()) {
+    if ( new Date( vevificationCode.expiredAt )< new Date()) {
       throw OTPExpiredException
     }
     return true
@@ -104,7 +104,7 @@ export class AuthService {
       email: body.email,
       code,
       type: body.type,
-      expiredAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN as ms.StringValue)),
+      expiredAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN as ms.StringValue)).toISOString(),
     })
     // 3. Gửi mã OTP
     const { error } = await this.emailService.sendOtp({

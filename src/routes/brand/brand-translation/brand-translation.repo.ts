@@ -9,7 +9,7 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 
 @Injectable()
 export class BrandTranslationRepo {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prismaService: PrismaService) { }
 
   findById(id: number): Promise<GetBrandTranslationDetailResType | null> {
     return this.prismaService.brandTranslation.findUnique({
@@ -17,7 +17,7 @@ export class BrandTranslationRepo {
         id,
         deletedAt: null,
       },
-    })
+    }) as any
   }
 
   create({
@@ -32,7 +32,7 @@ export class BrandTranslationRepo {
         ...data,
         createdById,
       },
-    })
+    }) as any
   }
 
   async update({
@@ -53,7 +53,7 @@ export class BrandTranslationRepo {
         ...data,
         updatedById,
       },
-    })
+    }) as any
   }
 
   delete(
@@ -66,21 +66,22 @@ export class BrandTranslationRepo {
     },
     isHard?: boolean,
   ): Promise<BrandTranslationType> {
-    return isHard
+    return (isHard
       ? this.prismaService.brandTranslation.delete({
-          where: {
-            id,
-          },
-        })
+        where: {
+          id,
+        },
+      })
       : this.prismaService.brandTranslation.update({
-          where: {
-            id,
-            deletedAt: null,
-          },
-          data: {
-            deletedAt: new Date(),
-            deletedById,
-          },
-        })
+        where: {
+          id,
+          deletedAt: null,
+        },
+        data: {
+          deletedAt: new Date(),
+          deletedById,
+        },
+      })
+    ) as any
   }
 }

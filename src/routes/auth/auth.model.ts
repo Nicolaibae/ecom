@@ -33,8 +33,8 @@ export const VerificationCodeSchema = z.object({
   email: z.email(),
   code: z.string().length(6),
   type: z.enum([TypeOfVerificationCode.REGISTER, TypeOfVerificationCode.FORGOT_PASSWORD, TypeOfVerificationCode.LOGIN, TypeOfVerificationCode.DISDISABLE_2FA]),
-  expiredAt: z.date(),
-  createdAt: z.date(),
+  expiredAt: z.iso.datetime(),
+  createdAt: z.iso.datetime(),
 })
 
 
@@ -90,8 +90,8 @@ export const DeviceSchema = z.object({
   userId: z.number(),
   userAgent: z.string(),
   ip: z.string(),
-  lastActive: z.date(),
-  createdAt: z.date(),
+  lastActive: z.iso.datetime(),
+  createdAt: z.iso.datetime(),
   isActive: z.boolean()
 })
 
@@ -103,16 +103,16 @@ export const RoleSchema = z.object({
   isActive: z.boolean(),
   createdById: z.number().nullable(),
   updatedById: z.number().nullable(),
-  deletedAt: z.date().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  deletedAt: z.iso.datetime().nullable(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 })
 export const RefreshTokenSchema = z.object({
   token: z.string(),
   userId: z.number(),
   deviceId: z.number(),
-  expiresAt: z.date(),
-  createdAt: z.date(),
+  expiresAt: z.iso.datetime(),
+  createdAt: z.iso.datetime(),
 })
 export const LogoutBodySchema = RefreshTokenBodySchema
 export const GoogleAuthStateSchema = DeviceSchema.pick({

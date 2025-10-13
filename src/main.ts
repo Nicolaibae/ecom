@@ -9,7 +9,7 @@ import { cleanupOpenApiDoc } from 'nestjs-zod'
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
   app.enableCors();
-  
+  app.set('trust proxy', 'loopback')
 
     const config = new DocumentBuilder()
     .setTitle('Ecommerce API')

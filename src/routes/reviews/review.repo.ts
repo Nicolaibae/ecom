@@ -47,7 +47,7 @@ export class ReviewRepository {
             page: pagination.page,
             limit: pagination.limit,
             totalPages: Math.ceil(totalItems / pagination.limit),
-        }
+        } as any
     }
     private async validateOrder({ orderId, userId }: { orderId: number; userId: number }) {
         const order = await this.prismaService.order.findUnique({
@@ -120,7 +120,7 @@ export class ReviewRepository {
                 ...review,
                 medias: reviewMedias,
             }
-        })
+        }) as any
     }
     async update({
         userId,
@@ -184,7 +184,7 @@ export class ReviewRepository {
                 ...review,
                 medias: reviewMedias,
             }
-        })
+        }) as any
     }
 }
 

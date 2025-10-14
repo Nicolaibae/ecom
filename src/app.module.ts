@@ -28,16 +28,20 @@ import { BullModule } from '@nestjs/bullmq';
 import { WebsocketsModule } from './websockets/websockets.module';
 import path from 'path'
 import envConfig from './shared/config';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { ThrottlerModule } from '@nestjs/throttler'
 import { ThrottlerBehindProxyGuard } from './shared/guards/throttler-behind-proxy.guard';
 import { ReviewsModule } from './routes/reviews/reviews.module';
+import { ScheduleModule } from '@nestjs/schedule'
+import { PaymentConsumer } from './queues/payment.consumer';
+import { RemoveRefreshTokenCronjob } from './cronjobs/remove-refresh-token.cronjob';
 
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     BullModule.forRoot({
       connection: {
-       url: envConfig.url_Redis
+        url: envConfig.url_Redis
       },
     }),
     I18nModule.forRoot({
@@ -49,7 +53,7 @@ import { ReviewsModule } from './routes/reviews/reviews.module';
       resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver],
       typesOutputPath: path.resolve('src/generated/i18n.generated.ts'),
     }),
-     ThrottlerModule.forRoot({
+    ThrottlerModule.forRoot({
       throttlers: [
         {
           name: 'short',
@@ -89,6 +93,8 @@ import { ReviewsModule } from './routes/reviews/reviews.module';
       provide: APP_GUARD,
       useClass: ThrottlerBehindProxyGuard,
     },
+    PaymentConsumer,
+    RemoveRefreshTokenCronjob
   ],
 })
 export class AppModule { }

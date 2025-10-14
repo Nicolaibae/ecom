@@ -30,6 +30,7 @@ import path from 'path'
 import envConfig from './shared/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { ThrottlerBehindProxyGuard } from './shared/guards/throttler-behind-proxy.guard';
+import { ReviewsModule } from './routes/reviews/reviews.module';
 
 
 @Module({
@@ -63,7 +64,7 @@ import { ThrottlerBehindProxyGuard } from './shared/guards/throttler-behind-prox
       ],
     }),
 
-    SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule, MediaModule, BrandModule, BrandTranslationModule, CategoryModule, ProductModule, CartModule, OrderModule, PaymentModule, WebsocketsModule
+    SharedModule, AuthModule, LanguageModule, PermissionModule, RoleModule, ProfileModule, UserModule, MediaModule, BrandModule, BrandTranslationModule, CategoryModule, ProductModule, CartModule, OrderModule, PaymentModule, WebsocketsModule, ReviewsModule
   ],
   controllers: [AppController, LanguageController, PermissionController],
   providers: [

@@ -35,7 +35,7 @@ const configSchema = z.object({
     S3_ACCESS_KEY:z.string(),
     S3_SECRET_KEY:z.string(),
     S3_BUCKET_NAME:z.string(),
-    url_Redis: z.string()
+    URL_REDIS: z.string()
 
 })
 

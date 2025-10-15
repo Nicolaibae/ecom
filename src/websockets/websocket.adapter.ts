@@ -21,7 +21,7 @@ export class WebsocketAdapter extends IoAdapter {
     this.tokenService = app.get(TokenService)
   }
   async connectToRedis(): Promise<void> {
-    const pubClient = createClient({ url:envConfig.url_Redis });
+    const pubClient = createClient({ url:envConfig.URL_REDIS });
     const subClient = pubClient.duplicate();
 
     await Promise.all([pubClient.connect(), subClient.connect()]);

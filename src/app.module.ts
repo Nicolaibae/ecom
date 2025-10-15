@@ -34,14 +34,24 @@ import { ReviewsModule } from './routes/reviews/reviews.module';
 import { ScheduleModule } from '@nestjs/schedule'
 import { PaymentConsumer } from './queues/payment.consumer';
 import { RemoveRefreshTokenCronjob } from './cronjobs/remove-refresh-token.cronjob';
+import { CacheModule } from '@nestjs/cache-manager';
+import { createKeyv } from '@keyv/redis'
 
 
 @Module({
   imports: [
+    CacheModule.registerAsync({
+      isGlobal:true,
+       useFactory: () => {
+        return {
+          stores: [createKeyv(envConfig.URL_REDIS)],
+        }
+      },
+    }),
     ScheduleModule.forRoot(),
     BullModule.forRoot({
       connection: {
-        url: envConfig.url_Redis
+        url: envConfig.URL_REDIS
       },
     }),
     I18nModule.forRoot({

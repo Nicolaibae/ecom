@@ -1,13 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PermissionRepo } from './permission.repo';
 import { CreatePermissionBodyType, GetPermissionsQueryType, UpdatePermissionBodyType } from './permission.model';
 import { NotFoundRecordException } from 'src/shared/error';
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helper';
 import { PermissionAlreadyExistsException } from './permission.error';
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import type { Cache } from 'cache-manager'
 
 @Injectable()
 export class PermissionService {
-    constructor(private readonly permissionRepo: PermissionRepo) { }
+    constructor(
+        private readonly permissionRepo: PermissionRepo,
+         @Inject(CACHE_MANAGER) private cacheManager: Cache
+    ) { }
 
     async list(pagination: GetPermissionsQueryType) {
         return await this.permissionRepo.list(pagination)
@@ -31,7 +36,9 @@ export class PermissionService {
     }
     async update({ data, id, updatedById }: { id: number, updatedById: number, data: UpdatePermissionBodyType }) {
         try {
-            return await this.permissionRepo.update({ data, id, updatedById })
+            const permission =  await this.permissionRepo.update({ data, id, updatedById })
+            this.deleteCachedRole(permission.roles)
+            return permission
         } catch (error) {
             if (isNotFoundPrismaError(error)) {
                 throw NotFoundRecordException
@@ -44,7 +51,8 @@ export class PermissionService {
     }
     async delete({ id, deletedById }: { id: number, deletedById: number }) {
         try {
-            await this.permissionRepo.delete({ id, deletedById });
+          const permission =  await this.permissionRepo.delete({ id, deletedById });
+          this.deleteCachedRole(permission.roles)
             return {
                 message: 'Delete successfully',
             }
@@ -55,5 +63,13 @@ export class PermissionService {
             throw error
         }
     }
+     deleteCachedRole(roles: { id: number }[]) {
+    return Promise.all(
+      roles.map((role) => {
+        const cacheKey = `role:${role.id}`
+        return this.cacheManager.del(cacheKey)
+      }),
+    )
+  }
 
 }

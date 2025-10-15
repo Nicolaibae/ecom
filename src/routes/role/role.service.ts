@@ -1,14 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { RoleRepository } from './role.repo';
 import { CreateRoleBodyType, GetRolesQueryType, UpdateRoleBodyType } from './role.model';
 import { ProhibitedActionOnBaseRoleException, RoleAlreadyExistsException } from './role.error';
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helper';
 import { NotFoundRecordException } from 'src/shared/error';
 import { RoleName } from 'src/shared/constants/role.constant';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager'
 
 @Injectable()
 export class RoleService {
-    constructor(private readonly roleRepo: RoleRepository) { }
+    constructor(
+        private readonly roleRepo: RoleRepository,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache
+    ) { }
     list(pagination: GetRolesQueryType) {
         return this.roleRepo.list(pagination)
     }
@@ -38,6 +43,7 @@ export class RoleService {
                 updatedById,
                 data,
             })
+            await this.cacheManager.del(`role:${UpdatedRole.id}`)
             return UpdatedRole
         } catch (error) {
             if (isNotFoundPrismaError(error)) {
@@ -53,6 +59,7 @@ export class RoleService {
         try {
             await this.verifyRole(id)
             await this.roleRepo.delete({ id, deletedById })
+            await this.cacheManager.del(`role:${id}`)
             return {
                 message: 'Delete successfully',
             }

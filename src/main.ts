@@ -4,11 +4,12 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { WebsocketAdapter } from './websockets/websocket.adapter';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod'
-
+import helmet from 'helmet'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
   app.enableCors();
+  app.use(helmet())
   app.set('trust proxy', 'loopback')
 
     const config = new DocumentBuilder()
